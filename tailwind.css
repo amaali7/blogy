@@ -1,0 +1,89 @@
+@import 'tailwindcss';
+
+/* * { */
+/*   @apply font-mono; */
+/* } */
+
+/* @layer components { */
+/*   .btn { */
+/*     @apply items-center block px-10 py-2 font-normal text-center transition duration-500 ease-in-out transform; */
+/*   } */
+/*   /\*--------------------------------------------------------------------------------------------------------------------------*\/ */
+/*   .btn-outline { */
+/*     @apply border  focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2  btn; */
+/*   } */
+/*   .btn-outline-primary { */
+/*     @apply text-primary-dark hover:text-white border-primary-light hover:bg-primary-dark focus:ring-primary-light dark:border-primary-light dark:text-primary-light dark:hover:text-white dark:hover:bg-primary-light dark:focus:ring-primary-dark btn-outline; */
+/*   } */
+/*   .btn-outline-secondary { */
+/*     @apply text-secondary-dark hover:text-white border-secondary-light hover:bg-secondary-dark focus:ring-secondary-light dark:border-secondary-light dark:text-secondary-light dark:hover:text-white dark:hover:bg-secondary-light dark:focus:ring-secondary-dark btn-outline; */
+/*   } */
+/*   .btn-outline-success { */
+/*     @apply text-success-dark hover:text-white border-success-light hover:bg-success-dark focus:ring-success-light dark:border-success-light dark:text-success-light dark:hover:text-white dark:hover:bg-success-light dark:focus:ring-success-dark btn-outline; */
+/*   } */
+/*   .btn-outline-info { */
+/*     @apply text-info-dark hover:text-white border-info-light hover:bg-info-dark focus:ring-info-light dark:border-info-light dark:text-info-light dark:hover:text-white dark:hover:bg-info-light dark:focus:ring-info-dark btn-outline; */
+/*   } */
+/*   .btn-outline-warning { */
+/*     @apply text-warning-dark hover:text-dark-dark border-warning-light hover:bg-warning-dark focus:ring-warning-light dark:border-warning-light dark:text-warning-light dark:hover:text-dark-dark dark:hover:bg-warning-light dark:focus:ring-warning-dark btn-outline; */
+/*   } */
+/*   .btn-outline-dengeros { */
+/*     @apply text-dengeros-dark hover:text-white border-dengeros-light hover:bg-dengeros-dark focus:ring-dengeros-light dark:border-dengeros-light dark:text-dengeros-light dark:hover:text-white dark:hover:bg-dengeros-light dark:focus:ring-dengeros-dark btn-outline; */
+/*   } */
+/*   .btn-outline-dark { */
+/*     @apply text-dark-dark hover:text-white border-dark-light hover:bg-dark-dark focus:ring-dark-light dark:border-dark-light dark:text-dark-light dark:hover:text-white dark:hover:bg-dark-light dark:focus:ring-dark-dark btn-outline; */
+/*   } */
+/*   .btn-outline-light { */
+/*     @apply text-dark-light hover:text-dark-light border-light-light hover:bg-light-dark focus:ring-light-light dark:border-light-light dark:text-light-light dark:hover:text-light-light dark:hover:bg-light-light dark:focus:ring-light-dark btn-outline; */
+/*   } */
+/*   /\*--------------------------------------------------------------------------------------------------------------------------*\/ */
+/*   .btn-flat { */
+/*     @apply rounded-none border-0 shadow-none btn; */
+/*   } */
+/*   .btn-flat-primary { */
+/*     @apply bg-primary-dark hover:bg-primary-light text-light-light hover:text-light-dark btn-flat; */
+/*   } */
+/*   .btn-flat-secondary { */
+/*     @apply bg-secondary-dark hover:bg-secondary-light text-light-light hover:text-light-dark btn-flat; */
+/*   } */
+/*   .btn-flat-success { */
+/*     @apply bg-success-dark hover:bg-success-light text-light-light hover:text-light-dark btn-flat; */
+/*   } */
+/*   .btn-flat-info { */
+/*     @apply bg-info-dark hover:bg-info-light text-light-light hover:text-light-dark btn-flat; */
+/*   } */
+/*   .btn-flat-warning { */
+/*     @apply bg-warning-dark hover:bg-warning-light text-dark-light hover:text-dark-dark btn-flat; */
+/*   } */
+/*   .btn-flat-dengeros { */
+/*     @apply bg-dengeros-dark hover:bg-dengeros-light text-light-light hover:text-light-dark btn-flat; */
+/*   } */
+/*   .btn-flat-dark { */
+/*     @apply bg-dark-dark hover:bg-dark-light text-light-light hover:text-light-dark btn-flat; */
+/*   } */
+/*   .btn-flat-light { */
+/*     @apply bg-light-dark hover:bg-light-light text-dark-dark hover:text-dark-light btn-flat; */
+/*   } */
+/* } */
+
+/* .Dark { */
+/*   html { */
+/*     @apply bg-dark-dark text-light-light font-mono; */
+/*   } */
+/* } */
+
+/* .Light { */
+/*   html { */
+/*     @apply bg-light-light text-dark-dark font-mono; */
+/*   } */
+/* } */
+
+/* .Auto { */
+/*   html { */
+/*     @apply text-dark-light dark:text-light-dark bg-light-dark dark:bg-dark-light font-mono; */
+/*   } */
+/* } */
+
+/* .btn-rounded { */
+/*   @apply rounded border-2; */
+/* } */
