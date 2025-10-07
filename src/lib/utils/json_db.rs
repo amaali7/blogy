@@ -38,10 +38,20 @@ pub enum NavNode {
 
 impl JsonDb {
     pub async fn load() -> Result<Self, DataError> {
+        if let Ok(cached) = LocalStorage::get::<String>("JsonDB") {
+            Self::from_json(&cached)
+        }else {
+           Self::update().await
+        }
+    }
+
+
+    pub async fn update() -> Result<Self, DataError> {
         let json = reqwest::get(format!("{}index.json", BASE_URL))
             .await?
             .text()
             .await?;
+        let _ = LocalStorage::set("JsonDB", &json);
         Self::from_json(&json)
     }
 
