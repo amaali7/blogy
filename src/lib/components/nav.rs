@@ -1,4 +1,4 @@
-use crate::utils::json_db::NavNode;
+use crate::{utils::json_db::NavNode, Route};
 use dioxus::prelude::*;
 use dioxus_router::*;
 
@@ -7,43 +7,55 @@ pub struct NavBarProps {
     pub items: Vec<NavNode>,
 }
 
+fn path_to_route(path: &str) -> Option<Route> {
+    let segments: Vec<String> = path
+        .trim_start_matches('/')
+        .split('/')
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string())
+        .collect();
+
+    if !segments.is_empty() {
+        Some(Route::PageContent { path: segments })
+    } else {
+        Some(Route::PageContent {
+            path: vec!["pages".to_string(), "home".to_string()],
+        })
+    }
+}
+
 #[component]
 pub fn NavBar(props: NavBarProps) -> Element {
-    rsx! {
-        nav { class: "p-4",
-            ul {
-                for item in props.items {
-                    match item {
-                        NavNode::Page { name, path } => rsx! {
-                            li { class: "mb-1",
-                                Link {
-                                    class: "block px-4 py-2 text-gray-600 hover:text-blue-600",
-                                    to: path,
-                                    "{name}"
-                            }
-                            }
-                        },
-                        NavNode::Directory { name, path, children } => rsx! {
-                            li { class: "mb-2",
-                                Link {
-                                    class: "flex items-center justify-between w-full px-4 py-2 text-gray-700 hover:text-blue-600",
-                                    to: path,
-                                    span { "{name}" }
+    fn render_nav_items(items: &[NavNode]) -> Element {
+        rsx! {
+            for item in items {
+                match item {
+                    NavNode::Page { name, path } => {
+                        if let Some(route) = path_to_route(&path) {
+                            rsx! {
+                                li { class: "mb-1",
+                                    Link {
+                                        class: "block px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors",
+                                        to: route,
+                                        "{name}"
+                                    }
                                 }
-                                ul { class: "pl-4",
-                                    // for child in children {
-                                    //     if let NavNode::Page { name, path } = child {
-                                    //         rsx! {
-                                    //             li { class: "mb-1",
-                                    //                 Link {
-                                    //                     class: "block px-4 py-2 text-gray-600 hover:text-blue-600",
-                                    //                     to: path,
-                                    //                     name
-                                    //                 }
-                                    //             }
-                                    //         }
-                                    //     }
-                                    // }
+                            }
+                        } else {
+                            rsx! {
+                                li { class: "mb-1",
+                                    span { class: "block px-4 py-2 text-gray-400", "{name} (Invalid)" }
+                                }
+                            }
+                        }
+                    },
+                    NavNode::Directory { name, path, children } => {
+                        rsx! {
+                            li { class: "mb-2",
+                                // Directory as non-clickable header
+                                div { class: "px-4 py-2 text-gray-700 font-medium", "{name}" }
+                                ul { class: "pl-4 mt-1",
+                                    {render_nav_items(&children)}
                                 }
                             }
                         }
@@ -52,66 +64,12 @@ pub fn NavBar(props: NavBarProps) -> Element {
             }
         }
     }
+
+    rsx! {
+        nav { class: "p-4",
+            ul {
+                {render_nav_items(&props.items)}
+            }
+        }
+    }
 }
-// #[component]
-// fn NavItem(props: NavItemProps) -> Element {
-//     let class = if props.current {
-//         "block px-4 py-2 text-blue-600 font-medium"
-//     } else {
-//         "block px-4 py-2 text-gray-600 hover:text-blue-600"
-//     };
-
-//     rsx! {
-//         li { class: "mb-1",
-//             a { class: class, href: "{props.path}", "{props.name}" }
-//         }
-//     }
-// }
-
-// #[derive(Props, Clone, PartialEq)]
-// struct NavItemProps {
-//     name: String,
-//     path: String,
-//     current: bool,
-// }
-
-// #[component]
-// fn NavDropdown(props: NavDropdownProps) -> Element {
-//     let is_open = use_state(|| false);
-//     let has_active_child = props.children.iter().any(|child| match child {
-//         NavNode::Page { path, .. } => path == &props.current_path,
-//         _ => false,
-//     });
-
-//     rsx! {
-//         li { class: "mb-2",
-//             button {
-//                 class: "flex items-center justify-between w-full px-4 py-2 text-gray-700 hover:text-blue-600",
-//                 onclick: move |_| is_open.set(!is_open.get()),
-//                 span { "{props.name}" }
-//                 span { class: "ml-2", if is_open.get() { "▼" } else { "▶" } }
-//             }
-//             ul {
-//                 class: if is_open.get() || has_active_child { "pl-4" } else { "hidden" },
-//                 props.children.iter().map(|child| match child {
-//                     NavNode::Page { name, path } => rsx! {
-//                         NavItem {
-//                             name: name.clone(),
-//                             path: path.clone(),
-//                             current: path == &props.current_path
-//                         }
-//                     },
-//                     _ => None
-//                 })
-//             }
-//         }
-//     }
-// }
-
-// #[derive(Props, Clone, PartialEq)]
-// struct NavDropdownProps {
-//     name: String,
-//     path: String,
-//     children: Vec<NavNode>,
-//     current_path: String,
-// }

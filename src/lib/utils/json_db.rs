@@ -66,68 +66,132 @@ impl JsonDb {
         Ok(db)
     }
 
-    fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
-        if let Some(root) = value.get("root") {
-            let mut nav_tree = Vec::new();
-            Self::process_node_static(
-                root,
-                "",
-                &mut nav_tree,
-                &mut self.pages
-            )?;
-            self.nav_tree = nav_tree;
-        }
-        Ok(())
+    // fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
+    //     if let Some(root) = value.get("root") {
+    //         let mut nav_tree = Vec::new();
+    //         Self::process_node_static(
+    //             root,
+    //             "",
+    //             &mut nav_tree,
+    //             &mut self.pages
+    //         )?;
+    //         self.nav_tree = nav_tree;
+    //     }
+    //     Ok(())
+    // }
+
+    // fn process_node_static(
+    //     node: &serde_json::Value,
+    //     current_section: &str,
+    //     nav_nodes: &mut Vec<NavNode>,
+    //     pages: &mut HashMap<PageKey, PageData>,
+    // ) -> Result<(), DataError> {
+    //     let name = node["name"].as_str().ok_or(DataError::InvalidStructure)?;
+    //     let path = node["path"].as_str().ok_or(DataError::InvalidStructure)?;
+    //     let item_type = node["type"].as_str().ok_or(DataError::InvalidStructure)?;
+
+    //     match item_type {
+    //         "page" => {
+    //             let key = PageKey {
+    //                 section: current_section.to_string(),
+    //                 name: name.to_string(),
+    //             };
+
+    //             pages.insert(key, PageData {
+    //                 path: path.to_string(),
+    //                 file: node["file"].as_str().map(|s| s.to_string()),
+    //                 last_updated: node["date"].as_str()
+    //                     .and_then(|s| NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M").ok()),
+    //                 raw_content: None,
+    //             });
+
+    //             nav_nodes.push(NavNode::Page {
+    //                 name: name.to_string(),
+    //                 path: path.to_string(),
+    //             });
+    //         }
+    //         "directory" => {
+    //             let mut children = Vec::new();
+    //             if let Some(child_nodes) = node["children"].as_array() {
+    //                 for child in child_nodes {
+    //                     Self::process_node_static(child, name, &mut children, pages)?;
+    //                 }
+    //             }
+
+    //             nav_nodes.push(NavNode::Directory {
+    //                 name: name.to_string(),
+    //                 path: path.to_string(),
+    //                 children,
+    //             });
+    //         }
+    //         _ => return Err(DataError::InvalidStructure),
+    //     }
+    //     Ok(())
+    // }
+
+fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
+    if let Some(root) = value.get("root") {
+        let mut nav_tree = Vec::new();
+        Self::process_node_static(
+            root,
+            "", // Start with empty path for root
+            &mut nav_tree,
+            &mut self.pages
+        )?;
+        self.nav_tree = nav_tree;
     }
+    Ok(())
+}
 
     fn process_node_static(
-        node: &serde_json::Value,
-        current_section: &str,
-        nav_nodes: &mut Vec<NavNode>,
-        pages: &mut HashMap<PageKey, PageData>,
-    ) -> Result<(), DataError> {
-        let name = node["name"].as_str().ok_or(DataError::InvalidStructure)?;
-        let path = node["path"].as_str().ok_or(DataError::InvalidStructure)?;
-        let item_type = node["type"].as_str().ok_or(DataError::InvalidStructure)?;
+    node: &serde_json::Value,
+    current_path: &str, // Changed from current_section to current_path
+    nav_nodes: &mut Vec<NavNode>,
+    pages: &mut HashMap<PageKey, PageData>,
+) -> Result<(), DataError> {
+    let name = node["name"].as_str().ok_or(DataError::InvalidStructure)?;
+    let path = node["path"].as_str().ok_or(DataError::InvalidStructure)?;
+    let item_type = node["type"].as_str().ok_or(DataError::InvalidStructure)?;
 
-        match item_type {
-            "page" => {
-                let key = PageKey {
-                    section: current_section.to_string(),
-                    name: name.to_string(),
-                };
+    match item_type {
+        "page" => {
+            let key = PageKey {
+                section: current_path.to_string(), // Use current_path as section
+                name: name.to_string(),
+            };
 
-                pages.insert(key, PageData {
-                    path: path.to_string(),
-                    file: node["file"].as_str().map(|s| s.to_string()),
-                    last_updated: node["date"].as_str()
-                        .and_then(|s| NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M").ok()),
-                    raw_content: None,
-                });
+            pages.insert(key, PageData {
+                path: path.to_string(),
+                file: node["file"].as_str().map(|s| s.to_string()),
+                last_updated: node["date"].as_str()
+                    .and_then(|s| NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M").ok()),
+                raw_content: None,
+            });
 
-                nav_nodes.push(NavNode::Page {
-                    name: name.to_string(),
-                    path: path.to_string(),
-                });
-            }
-            "directory" => {
-                let mut children = Vec::new();
-                if let Some(child_nodes) = node["children"].as_array() {
-                    for child in child_nodes {
-                        Self::process_node_static(child, name, &mut children, pages)?;
-                    }
-                }
-
-                nav_nodes.push(NavNode::Directory {
-                    name: name.to_string(),
-                    path: path.to_string(),
-                    children,
-                });
-            }
-            _ => return Err(DataError::InvalidStructure),
+            nav_nodes.push(NavNode::Page {
+                name: name.to_string(),
+                path: path.to_string(),
+            });
         }
-        Ok(())
+        "directory" => {
+            let mut children = Vec::new();
+            if let Some(child_nodes) = node["children"].as_array() {
+                for child in child_nodes {
+                    // Pass the directory's path as the new current_path
+                    Self::process_node_static(child, path, &mut children, pages)?;
+                }
+            }
+
+            nav_nodes.push(NavNode::Directory {
+                name: name.to_string(),
+                path: path.to_string(),
+                children,
+            });
+        }
+        _ => return Err(DataError::InvalidStructure),
     }
+    Ok(())
+}
 
     pub fn get_nav_tree(&self) -> Vec<NavNode> {
         self.nav_tree.clone()
@@ -148,11 +212,23 @@ impl JsonDb {
         Ok(html)
     }
 
+    // pub fn find_page(&self, path: &str) -> Option<(&str, &str)> {
+    //     self.pages.iter()
+    //         .find(|(_, data)| data.path == path)
+    //         .map(|(key, _)| (key.section.as_str(), key.name.as_str()))
+    // }
     pub fn find_page(&self, path: &str) -> Option<(&str, &str)> {
-        self.pages.iter()
-            .find(|(_, data)| data.path == path)
-            .map(|(key, _)| (key.section.as_str(), key.name.as_str()))
-    }
+    // Normalize the path by ensuring it starts with /
+    let search_path = if path.starts_with('/') {
+        path.to_string()
+    } else {
+        format!("/{}", path)
+    };
+
+    self.pages.iter()
+        .find(|(_, data)| data.path == search_path)
+        .map(|(key, _)| (key.section.as_str(), key.name.as_str()))
+}
 
     async fn get_raw_content(
         &mut self,
@@ -220,20 +296,40 @@ impl JsonDb {
             .ok_or(DataError::PageNotFound)
     }
 
-    fn get_download_url(&self, section: &str, page: &str) -> Result<String, DataError> {
-        let key = PageKey {
-            section: section.to_string(),
-            name: page.to_string(),
-        };
+fn get_download_url(&self, section: &str, page: &str) -> Result<String, DataError> {
+    let key = PageKey {
+        section: section.to_string(),
+        name: page.to_string(),
+    };
 
-        let path = self.get_page_path(section, page)?;
-        self.pages.get(&key)
-            .and_then(|page_data| match &page_data.file {
-                Some(file) => Some(format!("{}{}{}", BASE_URL,path, file)),
-                None => None,
+    self.pages.get(&key)
+        .and_then(|page_data| {
+            page_data.file.as_ref().map(|file| {
+                // Construct the full URL properly
+                if let Some(base_path) = page_data.path.strip_suffix(&page) {
+                    format!("{}{}{}", BASE_URL, base_path, file)
+                } else {
+                    format!("{}{}/{}", BASE_URL, page_data.path, file)
+                }
             })
-            .ok_or(DataError::PageNotFound)
-    }
+        })
+        .ok_or(DataError::PageNotFound)
+}
+
+    // fn get_download_url(&self, section: &str, page: &str) -> Result<String, DataError> {
+    //     let key = PageKey {
+    //         section: section.to_string(),
+    //         name: page.to_string(),
+    //     };
+
+    //     let path = self.get_page_path(section, page)?;
+    //     self.pages.get(&key)
+    //         .and_then(|page_data| match &page_data.file {
+    //             Some(file) => Some(format!("{}{}{}", BASE_URL,path, file)),
+    //             None => None,
+    //         })
+    //         .ok_or(DataError::PageNotFound)
+    // }
 }
 
 pub fn markdown_to_html(markdown: &str) -> String {

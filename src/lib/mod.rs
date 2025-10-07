@@ -13,15 +13,18 @@ pub use utils::json_db::{JsonDb, DataError};
 pub static BASE_URL: &str = "https://raw.githubusercontent.com/amaali7/markdown_files/refs/heads/main/MarkDown/";
 pub static SYNTAX_SET: OnceLock<SyntaxSet> = OnceLock::new();
 pub static THEME_SET: OnceLock<ThemeSet> = OnceLock::new();
-pub static JSON_DB: OnceLock<JsonDb> = OnceLock::new();
+// pub static JSON_DB: OnceLock<JsonDb> = OnceLock::new();
+// To use RwLock for thread safety:
+use std::sync::RwLock;
+pub static JSON_DB: OnceLock<RwLock<JsonDb>> = OnceLock::new();
 static CONTENT_STATE: GlobalSignal<ContentState> = Signal::global(|| ContentState::Loading);
 
 
 #[derive(Routable, Clone)]
 enum Route {
-        #[layout(AppContent)]
-            #[route("/:..path")]
-            PageContent{ path: Vec<String> },
+    #[layout(AppContent)]
+        #[route("/:..path")]
+        PageContent{ path: Vec<String> },
 }
 
 #[component]
@@ -63,8 +66,15 @@ pub fn AppContent() -> Element {
         link { rel: "stylesheet", href: asset!("./assets/tailwind.css") }
         div { class: "flex min-h-screen bg-gray-50",
             div { class: "w-64 bg-white border-r",
+                // match JSON_DB.get() {
+                //     Some(db) => rsx! { NavBar { items: db.get_nav_tree() } },
+                //     None => rsx! { div { class: "p-4 text-gray-500", "Loading navigation..." } }
+                // }
                 match JSON_DB.get() {
-                    Some(db) => rsx! { NavBar { items: db.get_nav_tree() } },
+                    Some(db_lock) => {
+                        let db = db_lock.read().unwrap(); // or handle error properly
+                        rsx! { NavBar { items: db.get_nav_tree() } }
+                    },
                     None => rsx! { div { class: "p-4 text-gray-500", "Loading navigation..." } }
                 }
             }
@@ -75,8 +85,6 @@ pub fn AppContent() -> Element {
     }
 }
 
-
-
 #[component]
 pub fn App() -> Element {
     let db = use_resource(move || async move { JsonDb::load().await });
@@ -85,7 +93,7 @@ pub fn App() -> Element {
         Some(Ok(jsondb)) => {
             if JSON_DB.get().is_none() {
                 JSON_DB.get_or_init(|| {
-                    jsondb.clone()
+                    RwLock::new(jsondb.clone())
                 });
             }
             rsx! {
@@ -98,6 +106,27 @@ pub fn App() -> Element {
     }
 }
 
+// #[component]
+// pub fn App() -> Element {
+//     let db = use_resource(move || async move { JsonDb::load().await });
+
+//     match &*db.read_unchecked() {
+//         Some(Ok(jsondb)) => {
+//             if JSON_DB.get().is_none() {
+//                 JSON_DB.get_or_init(|| {
+//                     jsondb.clone()
+//                 });
+//             }
+//             rsx! {
+//                 Router::<Route> {
+//                 }
+//             }
+//         },
+//         Some(Err(e)) => rsx! { p { "Loading Json DB failed, {e}" } },
+//         None =>  rsx! { p { "Loading..." } }
+//     }
+// }
+
 
 
 #[derive(Clone)]
@@ -108,13 +137,27 @@ enum ContentState {
 }
 
 async fn load_content(path: &str) -> Result<ContentState, DataError> {
-    let (section, page) = JSON_DB.get().unwrap().find_page(path)
+    let db_lock = JSON_DB.get().unwrap();
+    let db = db_lock.read().unwrap();
+
+    let (section, page) = db.find_page(path)
         .ok_or(DataError::PageNotFound)?;
-    let mut db = JSON_DB.get().unwrap().clone();
-    let content = db.get_html_content(&section, &page).await?;
+
+    // You'll need to clone or use interior mutability
+    let mut db_clone = db.clone();
+    let content = db_clone.get_html_content(section, page).await?;
 
     Ok(ContentState::Ready(content))
 }
+
+// async fn load_content(path: &str) -> Result<ContentState, DataError> {
+//     let (section, page) = JSON_DB.get().unwrap().find_page(path)
+//         .ok_or(DataError::PageNotFound)?;
+//     let mut db = JSON_DB.get().unwrap().clone();
+//     let content = db.get_html_content(&section, &page).await?;
+
+//     Ok(ContentState::Ready(content))
+// }
 
 #[component]
 fn LoadingSpinner() -> Element {
