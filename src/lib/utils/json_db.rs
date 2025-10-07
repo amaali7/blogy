@@ -226,10 +226,11 @@ impl JsonDb {
             name: page.to_string(),
         };
 
+        let path = self.get_page_path(section, page)?;
         self.pages.get(&key)
             .and_then(|page_data| match &page_data.file {
-                Some(file) => Some(format!("{}{}", BASE_URL, file)),
-                None => Some(format!("{}{}.md", BASE_URL, page_data.path)),
+                Some(file) => Some(format!("{}{}{}", BASE_URL,path, file)),
+                None => None,
             })
             .ok_or(DataError::PageNotFound)
     }
