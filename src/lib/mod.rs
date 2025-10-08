@@ -19,8 +19,8 @@ use std::sync::RwLock;
 pub static JSON_DB: OnceLock<RwLock<JsonDb>> = OnceLock::new();
 static CONTENT_STATE: GlobalSignal<ContentState> = Signal::global(|| ContentState::Loading);
 
-
-#[derive(Routable, Clone)]
+#[rustfmt::skip]
+#[derive(Clone, Debug, PartialEq, Routable)]
 enum Route {
     #[layout(AppContent)]
         #[route("/:..path")]
@@ -63,7 +63,7 @@ fn PageContent(path: Vec<String>) -> Element {
 pub fn AppContent() -> Element {
 
     rsx! {
-        link { rel: "stylesheet", href: asset!("./assets/tailwind.css") }
+        // link { rel: "stylesheet", href: asset!("./././assets/tailwind.css") }
         div { class: "flex min-h-screen bg-gray-50",
             div { class: "w-64 bg-white border-r",
                 // match JSON_DB.get() {
