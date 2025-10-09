@@ -73,9 +73,6 @@ pub fn NavBar(props: NavBarProps) -> Element {
             }
         }
     }
-    let home = Route::PageContent {
-        path: vec!["pages".to_string(), "home".to_string()],
-    };
     rsx! {
         nav { class: "p-4",
             ul {

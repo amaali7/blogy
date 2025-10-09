@@ -26,7 +26,7 @@ enum Route {
 
 #[component]
 fn PageContent(path: Vec<String>) -> Element {
-    let mut content_state = use_signal(|| ContentState::Loading);
+    let content_state = use_signal(|| ContentState::Loading);
 
     // Use use_effect with path dependency to trigger on route changes
     use_effect(use_reactive!( |path| {

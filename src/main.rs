@@ -12,7 +12,7 @@ use syntect::{
     highlighting::ThemeSet,
     parsing::{SyntaxDefinition, SyntaxSet},
 };
-use ui::{App, JsonDb, JSON_DB, SYNTAX_SET, THEME_SET};
+use ui::{App, SYNTAX_SET, THEME_SET};
 
 fn main() {
     logger::init(Level::INFO).expect("failed to init logger");

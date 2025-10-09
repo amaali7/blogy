@@ -1,5 +1,6 @@
 [application]
-
+[web]
+brotli_compression = true
 [web.app]
 
 # HTML title tag content
