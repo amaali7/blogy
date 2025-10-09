@@ -1,4 +1,5 @@
 [application]
+
 [web]
 brotli_compression = true
 [web.app]
