@@ -4,12 +4,16 @@
 
 # HTML title tag content
 title = "blogy"
+base_path = "https://github.com/amaali7/blogy"
 
+[web.tailwind]
+input  = "tailwind.css"      # the file that contains @import "tailwindcss"
+output = "assets/tailwind.css"
 # include `assets` in web platform
 [web.resource]
 
 # Additional CSS style files
-style = []
+# style = [ "assets/tailwind.css" ]
 
 # Additional JavaScript files
 script = []
