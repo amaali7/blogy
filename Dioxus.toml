@@ -6,7 +6,7 @@ brotli_compression = true
 
 # HTML title tag content
 title = "blogy"
-base_path = "./"
+#base_path = "./"                #
 
 [web.tailwind]
 input  = "tailwind.css"      # the file that contains @import "tailwindcss"

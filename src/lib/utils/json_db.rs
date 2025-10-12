@@ -66,68 +66,6 @@ impl JsonDb {
         Ok(db)
     }
 
-    // fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
-    //     if let Some(root) = value.get("root") {
-    //         let mut nav_tree = Vec::new();
-    //         Self::process_node_static(
-    //             root,
-    //             "",
-    //             &mut nav_tree,
-    //             &mut self.pages
-    //         )?;
-    //         self.nav_tree = nav_tree;
-    //     }
-    //     Ok(())
-    // }
-
-    // fn process_node_static(
-    //     node: &serde_json::Value,
-    //     current_section: &str,
-    //     nav_nodes: &mut Vec<NavNode>,
-    //     pages: &mut HashMap<PageKey, PageData>,
-    // ) -> Result<(), DataError> {
-    //     let name = node["name"].as_str().ok_or(DataError::InvalidStructure)?;
-    //     let path = node["path"].as_str().ok_or(DataError::InvalidStructure)?;
-    //     let item_type = node["type"].as_str().ok_or(DataError::InvalidStructure)?;
-
-    //     match item_type {
-    //         "page" => {
-    //             let key = PageKey {
-    //                 section: current_section.to_string(),
-    //                 name: name.to_string(),
-    //             };
-
-    //             pages.insert(key, PageData {
-    //                 path: path.to_string(),
-    //                 file: node["file"].as_str().map(|s| s.to_string()),
-    //                 last_updated: node["date"].as_str()
-    //                     .and_then(|s| NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M").ok()),
-    //                 raw_content: None,
-    //             });
-
-    //             nav_nodes.push(NavNode::Page {
-    //                 name: name.to_string(),
-    //                 path: path.to_string(),
-    //             });
-    //         }
-    //         "directory" => {
-    //             let mut children = Vec::new();
-    //             if let Some(child_nodes) = node["children"].as_array() {
-    //                 for child in child_nodes {
-    //                     Self::process_node_static(child, name, &mut children, pages)?;
-    //                 }
-    //             }
-
-    //             nav_nodes.push(NavNode::Directory {
-    //                 name: name.to_string(),
-    //                 path: path.to_string(),
-    //                 children,
-    //             });
-    //         }
-    //         _ => return Err(DataError::InvalidStructure),
-    //     }
-    //     Ok(())
-    // }
 
 fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
     if let Some(root) = value.get("root") {
