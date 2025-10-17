@@ -30,15 +30,17 @@ struct PageData {
     raw_content: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Serialize, PartialEq)]
 pub enum NavNode {
     Page { name: String, path: String },
     Directory { name: String, path: String, children: Vec<NavNode> },
 }
 
+
 impl JsonDb {
     pub async fn load() -> Result<Self, DataError> {
         if let Ok(cached) = LocalStorage::get::<String>("JsonDB") {
+            web_sys::console::log_2(&"From Local".into(),&cached.clone().into());
             Self::from_json(&cached)
         }else {
            Self::update().await

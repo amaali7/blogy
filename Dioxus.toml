@@ -6,16 +6,18 @@ brotli_compression = true
 
 # HTML title tag content
 title = "blogy"
+out_dir = "docs"
 #base_path = "./"                #
 
-[web.tailwind]
-input  = "tailwind.css"      # the file that contains @import "tailwindcss"
-output = "assets/tailwind.css"
+# [web.tailwind]
+# input  = "tailwind.css"      # the file that contains @import "tailwindcss"
+# output = "assets/tailwind.css"  #
 # include `assets` in web platform
 [web.resource]
 
 # Additional CSS style files
-# style = [ "assets/tailwind.css" ]
+style = [
+]
 
 # Additional JavaScript files
 script = []

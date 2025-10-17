@@ -11,7 +11,6 @@ pub struct PreviewAreaProps {
 pub fn PreviewArea(props: PreviewAreaProps) -> Element {
     rsx! {
         article {
-            class: "prose max-w-none {props.class}",
             dangerous_inner_html: "{props.content}"
         }
     }

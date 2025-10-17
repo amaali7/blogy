@@ -1,0 +1,199 @@
+$bp: (
+  mobile: (
+    min: 0px,
+    max: 480px,
+  ),
+  tablet: (
+    min: 481px,
+    max: 820px,
+  ),
+  smallScreen: (
+    min: 821px,
+    max: 1440px,
+  ),
+  largScreen: (
+    min: 1441px,
+    max: 2440px,
+  ),
+  extraLarg: (
+    min: 2441px,
+    max: 3440px,
+  ),
+);
+
+$orang: #f08f53;
+$deep-blue: #1e1f31;
+$white: #fff;
+$light-gray: #aba9b4;
+$light-orang: #f8ccb1;
+$trans-black: #00000049;
+$trans-orang: #f08f53cb;
+// Color Co
+$gray-one: #968a83;
+$blue-one: #53d8f0;
+$purple-one: #7d53f0;
+$yellow-one: #f0ed53;
+
+@mixin Query($screen) {
+  @each $key, $value in $bp {
+    @if ($screen == $key) {
+      @media (min-width: map-get($value, min)) and (max-width: map-get($value, max)) {
+        @content;
+      }
+    }
+    @if ($screen == "extraLarg") {
+      @media (min-width: 2441px) {
+        @content;
+      }
+    }
+  }
+}
+@mixin ClearFix {
+  &:after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+}
+@mixin RoundedHeader {
+  .rounded-header {
+    text-align: center;
+    padding: 8px 10px;
+    border: 2px solid $orang;
+    /* border-radius: 16px; */
+
+    width: 60%;
+    margin: 40px auto;
+    color: $orang;
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 1px;
+    transition: all ease 1s;
+    &:hover {
+      background-color: $orang;
+      color: $white;
+      scale: 1.2;
+    }
+  }
+}
+@mixin Typography {
+  .header {
+    color: $orang;
+    font-size: 1.3rem;
+    font-weight: 300;
+    display: block;
+    width: auto;
+  }
+  .span {
+    padding-top: 0.4rem;
+    color: $light-orang;
+    float: left;
+    font-size: 1rem;
+    font-weight: 100;
+    width: 100%;
+    display: block;
+  }
+  .body {
+    padding-top: 0.5rem;
+    color: $white;
+    float: left;
+    font-size: 1.1rem;
+    font-weight: 300;
+    width: 100%;
+    display: block;
+  }
+}
+@mixin ScaledHover($scale: 1.15) {
+  &:hover {
+    scale: 1.15;
+  }
+}
+
+@mixin Card {
+  .card {
+    position: relative;
+    margin-top: 6vw;
+    height: auto;
+    padding-bottom: 20px;
+    width: 45%;
+    border: 1px solid $orang;
+    /* border-radius: 16px; */
+    background-color: $deep-blue;
+    z-index: 5;
+    transition: all ease 1s;
+
+    .main-box {
+      margin: 2rem;
+      padding-top: 3vw;
+      height: auto;
+      border-radius: 16px;
+
+      @include Typography;
+    }
+    .top-box {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+      height: auto;
+      width: 90%;
+      border: 1px solid $orang;
+      /* border-radius: 16px; */
+      z-index: 6;
+      background-color: inherit;
+      h1 {
+        padding: 8px auto;
+        color: $orang;
+        font-size: 1.5rem;
+        font-weight: 300;
+        width: 100%;
+        display: block;
+        text-align: center;
+      }
+      .logo {
+        height: auto;
+        margin: 6px;
+        z-index: 6;
+        background-color: inherit;
+        img {
+          width: 3.3rem;
+          height: auto;
+          margin: auto;
+          display: block;
+          margin: 5px;
+        }
+        .mada {
+          border-radius: 0.5rem;
+        }
+      }
+    }
+    @include ScaledHover;
+  }
+}
+
+@mixin CodeSchema {
+  .span-1 {
+    color: $orang;
+    // font-weight: 300;
+  }
+  .span-2 {
+    color: $gray-one;
+    // font-weight: 300;
+  }
+  .span-3 {
+    color: $blue-one;
+    // font-weight: 300;
+  }
+  .span-4 {
+    color: $purple-one;
+    // font-weight: 300;
+  }
+  .span-5 {
+    color: $yellow-one;
+    // font-weight: 300;
+  }
+}

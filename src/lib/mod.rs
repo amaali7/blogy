@@ -5,7 +5,7 @@ use syntect::{highlighting::ThemeSet, parsing::SyntaxSet};
 mod components;
 mod utils;
 
-pub use components::{NavBar, PreviewArea};
+pub use components::{NavBar,  PreviewArea};
 pub use utils::json_db::{JsonDb, DataError};
 
 // Static resources
@@ -52,32 +52,30 @@ fn PageContent(path: Vec<String>) -> Element {
         ContentState::Ready(content) => rsx! {
             PreviewArea {
                 content: content.clone(),
-                class: "max-w-4xl mx-auto"
             }
         }
     }
 }
 
-// #[component]
-// pub fn AppContentOpt() -> Element {
-
-// }
-
 
 #[component]
 pub fn AppContent() -> Element {
     rsx! {
-        div { class: "flex min-h-screen bg-gray-50",
-            div { class: "w-64 bg-white border-r",
+        div {
+            div {
                 match JSON_DB.get() {
                     Some(db_lock) => {
                         let db = db_lock.read().unwrap();
-                        rsx! { NavBar { items: db.get_nav_tree() } }
+                        rsx! {
+                            header {
+                                NavBar { items: db.get_nav_tree() }
+                            }
+                        }
                     },
-                    None => rsx! { div { class: "p-4 text-gray-500", "Loading navigation..." } }
+                    None => rsx! { div {  "Loading navigation..." } }
                 }
             }
-            main { class: "flex-1 p-6 overflow-auto",
+            main {
                 Outlet::<Route> {}
             }
         }
@@ -92,13 +90,14 @@ pub fn App() -> Element {
         Some(Ok(jsondb)) => {
             if JSON_DB.get().is_none() {
                 JSON_DB.get_or_init(|| {
+
                     RwLock::new(jsondb.clone())
+
                 });
             }
             rsx! {
-                link { rel: "stylesheet", href: asset!("/assets/tailwind.css") }
-                Router::<Route> {
-                }
+                link { rel: "stylesheet", href: asset!("/styles/main.scss") }
+                Router::<Route>{}
             }
         },
         Some(Err(e)) => rsx! { p { "Loading Json DB failed, {e}" } },
@@ -139,8 +138,8 @@ async fn load_content(path: &str) -> Result<ContentState, DataError> {
 #[component]
 fn LoadingSpinner() -> Element {
     rsx! {
-        div { class: "flex justify-center items-center h-full",
-            div { class: "animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" }
+        div {
+            div {  }
         }
     }
 }
@@ -148,10 +147,10 @@ fn LoadingSpinner() -> Element {
 #[component]
 fn ErrorMessage(error: String) -> Element {
     rsx! {
-        div { class: "bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded",
-            div { class: "flex items-center",
+        div {
+            div {
                 svg {
-                    class: "w-5 h-5 mr-2",
+
                     view_box: "0 0 20 20",
                     fill: "currentColor",
                     path {
