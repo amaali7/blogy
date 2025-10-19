@@ -11,7 +11,7 @@ path = "src/lib/mod.rs"
 # crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-dioxus = { git = "https://github.com/DioxusLabs/dioxus.git", tag = "v0.7.0-rc.1", features = ["router"] }
+dioxus = { git = "https://github.com/DioxusLabs/dioxus.git", tag = "v0.7.0-rc.2", features = ["router"] }
 gloo-storage = "0.3.0"
 gloo-timers = {version = "0.3.0", features = [ "futures" ]}
 reqwest = "0.12.20"
@@ -21,6 +21,9 @@ serde_json_path = "0.7.2"
 pulldown-cmark = "0.13.0"
 syntect = {version = "5.2.0", default-features = false, features = [ "default-fancy" ]}
 chrono = { version = "0.4.41", features = ["serde"] }
+web-sys = "0.3"
+wasm-bindgen = "0.2"
+serde-wasm-bindgen = "0.6"
 
 [features]
 default = ["web"]

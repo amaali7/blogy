@@ -1,0 +1,61 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+@import "./mixin.scss";
+@import "./header.scss";
+@import "./markdown.scss";
+body {
+  // font-family: "Victor Mono", monospace;
+  font-family: "Jost*", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+   background-color: $sys-bg;
+}
+
+html {
+  overflow-x: hidden;
+  font-size: 15px;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.page-section {
+  width: 100%;
+  min-height: calc(100vh);
+}
+
+a {
+  text-decoration: none;
+}
+@include Query(mobile) {
+  html {
+    font-size: 15px;
+  }
+}
+@include Query(tablet) {
+  html {
+    font-size: 16px;
+  }
+}
+@include Query(smallScreen) {
+  html {
+    font-size: 18px;
+  }
+}
+@include Query(largScreen) {
+  html {
+    font-size: 19px;
+  }
+}
+@include Query(extraLarg) {
+  html {
+    font-size: 20px;
+  }
+}
+pre, code {
+  font-size: 0.75em;
+  font-family: "JetBrains Mono", monospace;
+}

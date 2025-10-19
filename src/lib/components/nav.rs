@@ -30,55 +30,161 @@ fn path_to_route(path: &str) -> Option<Route> {
     }
 }
 
+#[derive(Clone, PartialEq, Props)]
+struct MenuItemProps {
+    pub name: String,
+    pub items: Vec<NavNode>,
+}
+
+#[derive(Clone, PartialEq, Props)]
+struct LinkItemProps {
+    label: String,
+    href: Route,
+    current_page: bool,
+}
+
+// #[component]
+// fn MenuItem(props: MenuItemProps) -> Element {
+//     let mut is_open = use_signal(|| false);
+
+//     rsx! {
+//         li {
+//             class: "menu-item",
+//             onmouseenter: move |_| is_open.set(true),
+//             onmouseleave: move |_| is_open.set(false),
+
+//             div {
+//                 class: "menu-label",
+//                 "{props.name}"
+//                 span { class: "dropdown-arrow", "▼" }
+//             }
+//             ul {
+//                 class: if is_open() { "dropdown-menu dropdown-open" } else { "dropdown-menu" },
+//                 for item in props.items {
+//                     match item {
+//                         NavNode::Page { name, path } => {
+//                             if let Some(route) = path_to_route(&path) {
+
+//                                 rsx! {
+//                                     LinkItem{ label: name, href: route, current_page: false}
+//                                     }
+//                             } else {
+//                                 rsx! {
+//                                     li {
+//                                         span {
+//                                             "{name} (Invalid path: {path})"
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                         },
+//                         NavNode::Directory { name, children, .. } => {
+//                             rsx! {
+//                                 MenuItem{ name: name , items: children.clone() }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
 #[component]
-pub fn NavBar(props: NavBarProps) -> Element {
-    fn render_nav_items(items: &[NavNode]) -> Element {
-        rsx! {
-            for item in items {
-                match item {
-                    NavNode::Page { name, path } => {
-                        if let Some(route) = path_to_route(&path) {
-                            rsx! {
-                                li { class: "mb-1",
-                                    Link {
-                                        class: "block px-4 py-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors btn",
-                                        to: route,
-                                        "{name}"
+fn MenuItem(props: MenuItemProps) -> Element {
+    let mut is_open = use_signal(|| false);
+
+    // toggle on click (mobile), hover still works on desktop
+    let toggle = move |e: Event<MouseData>| {
+        e.stop_propagation(); // ← keep outer listeners from hearing it
+        is_open.with_mut(|v| *v = !*v);
+    };
+
+    rsx! {
+        li {
+            class: "menu-item",
+            onmouseenter: move |_| is_open.set(true),
+            onmouseleave: move |_| is_open.set(false),
+            onclick: toggle,                       // ← new
+
+            div { class: "menu-label", "{props.name}" }
+            ul {
+                class: if is_open() { "dropdown-menu dropdown-open" }
+                       else { "dropdown-menu" },
+                for item in props.items {
+                    match item {
+                        NavNode::Page { name, path } => {
+                            if let Some(route) = path_to_route(&path) {
+
+                                rsx! {
+                                    LinkItem{ label: name, href: route, current_page: false}
+                                    }
+                            } else {
+                                rsx! {
+                                    li {
+                                        span {
+                                            "{name} (Invalid path: {path})"
+                                        }
                                     }
                                 }
                             }
-                        } else {
+                        },
+                        NavNode::Directory { name, children, .. } => {
                             rsx! {
-                                li { class: "mb-1",
-                                    span {
-                                        class: "block px-4 py-2 text-gray-400 cursor-not-allowed",
-                                        "{name} (Invalid path: {path})"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    NavNode::Directory { name, children, .. } => {
-                        rsx! {
-                            li { class: "mb-2",
-                                // Directory as non-clickable header
-                                div { class: "px-4 py-2 text-gray-700 font-medium", "{name}" }
-                                ul { class: "pl-4 mt-1",
-                                    {render_nav_items(&children)}
-                                }
+                                MenuItem{ name: name , items: children.clone() }
                             }
                         }
                     }
                 }
+
             }
         }
     }
-    rsx! {
-        nav { class: "p-4",
-            ul {
-                {render_nav_items(&props.items)}
-            }
+}
 
+#[component]
+fn LinkItem(props: LinkItemProps) -> Element {
+    let route = props.href.clone(); // Route enum we built in path_to_route
+    rsx! {
+        li {
+            Link {
+                to: route,
+                aria_current: if props.current_page { "page" } else { "false" },
+                class: if props.current_page { "link-item current-page" }
+                       else { "link-item" },
+                "{props.label}"
+            }
+        }
+    }
+}
+
+// #[component]
+// fn LinkItem(props: LinkItemProps) -> Element {
+//     rsx! {
+//         li {
+//             a {
+//                 href: "{props.href}",
+//                 "data-dioxus-id": "auto-generate",
+//                 aria_current: if props.current_page { "page" } else { "false" },
+//                 class: if props.current_page { "link-item current-page" } else { "link-item " },
+//                 "{props.label}"
+//             }
+//         }
+//     }
+// }
+
+#[component]
+pub fn NavBar(props: NavBarProps) -> Element {
+    let js = serde_wasm_bindgen::to_value(&props.items).unwrap();
+    web_sys::console::log_1(&js);
+    rsx! {
+        nav {
+            id: "navbar",
+            class: "navbar",
+            if let NavNode::Directory { name, children,  .. } = &props.items[0]{
+                div { class: "logo", "{name}" }
+                MenuItem{name: "Menu", items: children.clone()}
+            }
         }
     }
 }
