@@ -23,7 +23,6 @@ syntect = {version = "5.2.0", default-features = false, features = [ "default-fa
 chrono = { version = "0.4.41", features = ["serde"] }
 web-sys = "0.3"
 wasm-bindgen = "0.2"
-serde-wasm-bindgen = "0.6"
 
 [features]
 default = ["web"]
@@ -46,5 +45,5 @@ inherits = "dev"
 [profile.release]
 lto = true # Enable Link Time Optimization
 codegen-units = 1 # Reduce the number of code generation units for better optimization
-opt-level = "s" # Optimize for size (or "z" for even smaller size)
+opt-level = "z" # Optimize for size (or "z" for even smaller size)
 debug = false # Disable debug symbols in release builds
