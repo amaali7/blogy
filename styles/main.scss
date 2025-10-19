@@ -6,11 +6,13 @@
 }
 @import "./mixin.scss";
 @import "./header.scss";
+@import "./markdown.scss";
 body {
-  font-family: "Victor Mono", monospace;
+  // font-family: "Victor Mono", monospace;
+  font-family: "Jost*", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: $deep-blue;
+   background-color: $sys-bg;
 }
 
 html {
@@ -52,4 +54,8 @@ a {
   html {
     font-size: 20px;
   }
+}
+pre, code {
+  font-size: 0.75em;
+  font-family: "JetBrains Mono", monospace;
 }

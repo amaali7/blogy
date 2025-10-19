@@ -1,5 +1,3 @@
-use std::sync::OnceLock;
-
 use crate::{utils::json_db::NavNode, Route};
 use dioxus::prelude::*;
 
@@ -41,27 +39,78 @@ struct MenuItemProps {
 #[derive(Clone, PartialEq, Props)]
 struct LinkItemProps {
     label: String,
-    href: String,
+    href: Route,
     current_page: bool,
 }
+
+// #[component]
+// fn MenuItem(props: MenuItemProps) -> Element {
+//     let mut is_open = use_signal(|| false);
+
+//     rsx! {
+//         li {
+//             class: "menu-item",
+//             onmouseenter: move |_| is_open.set(true),
+//             onmouseleave: move |_| is_open.set(false),
+
+//             div {
+//                 class: "menu-label",
+//                 "{props.name}"
+//                 span { class: "dropdown-arrow", "▼" }
+//             }
+//             ul {
+//                 class: if is_open() { "dropdown-menu dropdown-open" } else { "dropdown-menu" },
+//                 for item in props.items {
+//                     match item {
+//                         NavNode::Page { name, path } => {
+//                             if let Some(route) = path_to_route(&path) {
+
+//                                 rsx! {
+//                                     LinkItem{ label: name, href: route, current_page: false}
+//                                     }
+//                             } else {
+//                                 rsx! {
+//                                     li {
+//                                         span {
+//                                             "{name} (Invalid path: {path})"
+//                                         }
+//                                     }
+//                                 }
+//                             }
+//                         },
+//                         NavNode::Directory { name, children, .. } => {
+//                             rsx! {
+//                                 MenuItem{ name: name , items: children.clone() }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
 
 #[component]
 fn MenuItem(props: MenuItemProps) -> Element {
     let mut is_open = use_signal(|| false);
+
+    // toggle on click (mobile), hover still works on desktop
+    let toggle = move |e: Event<MouseData>| {
+        e.stop_propagation(); // ← keep outer listeners from hearing it
+        is_open.with_mut(|v| *v = !*v);
+    };
 
     rsx! {
         li {
             class: "menu-item",
             onmouseenter: move |_| is_open.set(true),
             onmouseleave: move |_| is_open.set(false),
+            onclick: toggle,                       // ← new
 
-            div {
-                class: "menu-label",
-                "{props.name}"
-                span { class: "dropdown-arrow", "▼" }
-            }
+            div { class: "menu-label", "{props.name}" }
             ul {
-                class: if is_open() { "dropdown-menu dropdown-open" } else { "dropdown-menu" },
+                class: if is_open() { "dropdown-menu dropdown-open" }
+                       else { "dropdown-menu" },
                 for item in props.items {
                     match item {
                         NavNode::Page { name, path } => {
@@ -87,6 +136,7 @@ fn MenuItem(props: MenuItemProps) -> Element {
                         }
                     }
                 }
+
             }
         }
     }
@@ -94,18 +144,34 @@ fn MenuItem(props: MenuItemProps) -> Element {
 
 #[component]
 fn LinkItem(props: LinkItemProps) -> Element {
+    let route = props.href.clone(); // Route enum we built in path_to_route
     rsx! {
         li {
-            a {
-                href: "{props.href}",
-                "data-dioxus-id": "auto-generate",
+            Link {
+                to: route,
                 aria_current: if props.current_page { "page" } else { "false" },
-                class: if props.current_page { "link-item current-page" } else { "link-item " },
+                class: if props.current_page { "link-item current-page" }
+                       else { "link-item" },
                 "{props.label}"
             }
         }
     }
 }
+
+// #[component]
+// fn LinkItem(props: LinkItemProps) -> Element {
+//     rsx! {
+//         li {
+//             a {
+//                 href: "{props.href}",
+//                 "data-dioxus-id": "auto-generate",
+//                 aria_current: if props.current_page { "page" } else { "false" },
+//                 class: if props.current_page { "link-item current-page" } else { "link-item " },
+//                 "{props.label}"
+//             }
+//         }
+//     }
+// }
 
 #[component]
 pub fn NavBar(props: NavBarProps) -> Element {

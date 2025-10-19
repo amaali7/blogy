@@ -5,7 +5,7 @@ use syntect::{highlighting::ThemeSet, parsing::SyntaxSet};
 mod components;
 mod utils;
 
-pub use components::{NavBar,  PreviewArea};
+pub use components::{NavBar, PreviewArea};
 pub use utils::json_db::{JsonDb, DataError};
 
 // Static resources
@@ -61,23 +61,19 @@ fn PageContent(path: Vec<String>) -> Element {
 #[component]
 pub fn AppContent() -> Element {
     rsx! {
-        div {
-            div {
-                match JSON_DB.get() {
-                    Some(db_lock) => {
-                        let db = db_lock.read().unwrap();
-                        rsx! {
-                            header {
-                                NavBar { items: db.get_nav_tree() }
-                            }
-                        }
-                    },
-                    None => rsx! { div {  "Loading navigation..." } }
+        match JSON_DB.get() {
+            Some(db_lock) => {
+                let db = db_lock.read().unwrap();
+                rsx! {
+                    header {
+                        NavBar { items: db.get_nav_tree() }
+                    }
                 }
-            }
-            main {
-                Outlet::<Route> {}
-            }
+            },
+            None => rsx! { div {  "Loading navigation..." } }
+        }
+        main {
+            Outlet::<Route> {}
         }
     }
 }

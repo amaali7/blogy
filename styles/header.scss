@@ -1,5 +1,147 @@
 @import "./mixin.scss";
 
+// /* =========  top-level navbar  ========= */
+// .navbar {
+//   position: relative;
+//   display: flex;
+//   align-items: center;
+//   gap: 2rem;
+//   padding: 1rem 2rem;
+//   background: #f8f9fa;
+//   border-bottom: 1px solid #dee2e6;
+
+//   .logo {
+//     font-size: 1.5rem;
+//     font-weight: bold;
+//     white-space: nowrap;
+//   }
+// }
+
+// /* =========  root menu  ========= */
+// .navbar > ul.dropdown-menu {          /* first-level <ul> */
+//   display: flex;
+//   gap: 1.5rem;
+//   margin: 0;
+//   padding: 0;
+//   list-style: none;
+// }
+
+// /* =========  shared menu-item look  ========= */
+// .menu-item {
+//   position: relative;
+//   list-style: none;
+
+//   .menu-label {
+//     display: flex;
+//     align-items: center;
+//     gap: 0.5rem;
+//     padding: 0.5rem 1rem;
+//     cursor: pointer;
+//     border-radius: 4px;
+//     transition: background-color .2s;
+
+//     &:hover { background-color: #e9ecef; }
+
+//     .dropdown-arrow {
+//       font-size: .7rem;
+//       transition: transform .2s;
+//     }
+//   }
+
+//   /* rotate arrow when open */
+//   &.dropdown-open > .menu-label .dropdown-arrow { transform: rotate(180deg); }
+// }
+
+// /* =========  dropdown panels  ========= */
+// .dropdown-menu {
+//   margin: 0;
+//   padding: .25rem 0;
+//   list-style: none;
+//   display: none;                     /* closed by default */
+//   position: absolute;
+//   top: 100%;
+//   left: 0;
+//   min-width: 200px;
+//   background: #fff;
+//   border: 1px solid #dee2e6;
+//   border-radius: 4px;
+//   box-shadow: 0 2px 15px rgba(0,0,0,.1);
+//   z-index: 1000;
+//   animation: dropdownFadeIn .2s ease-out;
+
+//   /* nested menus fly-out to the right */
+//   .menu-item > & {                  /* any ul that is a direct child of a li */
+//     top: 0;
+//     left: 100%;
+//     margin-top: -1px;
+//   }
+
+//   /* open when Dioxus adds the class */
+//   &.dropdown-open { display: block; }
+// }
+
+// /* =========  links inside menus  ========= */
+// a.link-item {
+//   display: block;
+//   padding: .75rem 1rem;
+//   color: #495057;
+//   text-decoration: none;
+//   border-radius: 3px;
+//   transition: all .2s;
+
+//   &:hover {
+//     background-color: #f8f9fa;
+//     color: #007bff;
+//   }
+
+//   &.current-page {
+//     background-color: #007bff;
+//     color: #fff;
+
+//     &:hover { background-color: #0056b3; }
+//   }
+// }
+
+// /* =========  animation  ========= */
+// @keyframes dropdownFadeIn {
+//   from { opacity: 0; transform: translateY(-10px); }
+//   to   { opacity: 1; transform: translateY(0); }
+// }
+
+// /* =========  mobile  ========= */
+// @media (max-width: 768px) {
+//   .navbar { flex-direction: column; align-items: flex-start; }
+
+//   .navbar > ul.dropdown-menu {        /* top level becomes column */
+//     flex-direction: column;
+//     width: 100%;
+//     gap: 0;
+//   }
+
+//   .dropdown-menu {
+//     position: static;
+//     box-shadow: none;
+//     border: none;
+//     border-left: 2px solid #dee2e6;
+//     margin-left: 1rem;
+//   }
+// }
+
+/* ==========================================================
+   navbar-systemcrafters.scss
+   SystemCrafters.net palette applied to your navbar
+   ========================================================== */
+
+/* ----------  palette  ----------------------------------- */
+$sys-bg:        #292d3e;          // main background
+$sys-fg:        #eeffff;          // text
+$sys-fg-soft:   #cdddeb;          // muted text
+$sys-accent:    #82aaff;          // primary blue
+$sys-accent-hc: #89aaeb;          // light-blue hover
+$sys-border:    #c3e88d;          // green borders
+$sys-surface:   #232635;          // raised surfaces
+$sys-highlight: rgba(35, 38, 53, .8); // hover backdrop
+
 /* =========  top-level navbar  ========= */
 .navbar {
   position: relative;
@@ -7,13 +149,14 @@
   align-items: center;
   gap: 2rem;
   padding: 1rem 2rem;
-  background: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+  background: $sys-surface;                 // ← SystemCrafters surface
+  border-bottom: 1px solid $sys-border;     // ← SystemCrafters green
 
   .logo {
     font-size: 1.5rem;
     font-weight: bold;
     white-space: nowrap;
+    color: $sys-accent;                     // ← SystemCrafters blue
   }
 }
 
@@ -38,12 +181,14 @@
     padding: 0.5rem 1rem;
     cursor: pointer;
     border-radius: 4px;
+    color: $sys-fg;                         // ← main text
     transition: background-color .2s;
 
-    &:hover { background-color: #e9ecef; }
+    &:hover { background-color: $sys-highlight; } // ← subtle hover
 
     .dropdown-arrow {
       font-size: .7rem;
+      color: $sys-border;                   // ← green arrow
       transition: transform .2s;
     }
   }
@@ -62,10 +207,10 @@
   top: 100%;
   left: 0;
   min-width: 200px;
-  background: #fff;
-  border: 1px solid #dee2e6;
+  background: $sys-surface;                 // ← SystemCrafters surface
+  border: 1px solid $sys-border;            // ← SystemCrafters green
   border-radius: 4px;
-  box-shadow: 0 2px 15px rgba(0,0,0,.1);
+  box-shadow: 0 2px 15px rgba(0,0,0,.25);
   z-index: 1000;
   animation: dropdownFadeIn .2s ease-out;
 
@@ -84,21 +229,21 @@
 a.link-item {
   display: block;
   padding: .75rem 1rem;
-  color: #495057;
+  color: $sys-fg-soft;                      // ← muted text
   text-decoration: none;
   border-radius: 3px;
   transition: all .2s;
 
   &:hover {
-    background-color: #f8f9fa;
-    color: #007bff;
+    background-color: $sys-highlight;       // ← subtle hover
+    color: $sys-accent;                     // ← SystemCrafters blue
   }
 
   &.current-page {
-    background-color: #007bff;
-    color: #fff;
+    background-color: $sys-accent;          // ← SystemCrafters blue
+    color: $sys-surface;                    // ← dark text on blue
 
-    &:hover { background-color: #0056b3; }
+    &:hover { background-color: $sys-accent-hc; }
   }
 }
 
@@ -122,7 +267,7 @@ a.link-item {
     position: static;
     box-shadow: none;
     border: none;
-    border-left: 2px solid #dee2e6;
+    border-left: 2px solid $sys-border;  // ← SystemCrafters green
     margin-left: 1rem;
   }
 }

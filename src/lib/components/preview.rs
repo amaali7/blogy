@@ -11,6 +11,7 @@ pub struct PreviewAreaProps {
 pub fn PreviewArea(props: PreviewAreaProps) -> Element {
     rsx! {
         article {
+            class: "markdown-body",
             dangerous_inner_html: "{props.content}"
         }
     }
