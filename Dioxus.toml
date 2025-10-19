@@ -1,7 +1,7 @@
 [application]
-# base_path = "https://amaali7.github.io/blogy/"   # <-- MUST match your GitHub repo name
-# out_dir = "docs"        # <-- GH-Pages will serve this folder
-# asset_dir = "docs"
+ base_path = "https://amaali7.github.io/blogy/"   # <-- MUST match your GitHub repo name
+ out_dir = "docs"        # <-- GH-Pages will serve this folder
+ asset_dir = "docs"
 [web]
 brotli_compression = true
 # repo name (or "" if you use a custom domain)
@@ -10,8 +10,8 @@ brotli_compression = true
 
 # HTML title tag content
 title = "blogy"
-#out_dir = "docs"
-#base_path = "https://amaali7.github.io/blogy/"   # <-- MUST match your GitHub repo name
+out_dir = "docs"
+base_path = "https://amaali7.github.io/blogy/"   # <-- MUST match your GitHub repo name
 
 # [web.tailwind]
 # input  = "tailwind.css"      # the file that contains @import "tailwindcss"
