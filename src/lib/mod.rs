@@ -22,10 +22,18 @@ enum Route {
     #[layout(AppContent)]
         #[route("/:..path")]
         PageContent{ path: Vec<String> },
+
 }
 
 #[component]
 fn PageContent(path: Vec<String>) -> Element {
+    // if user landed on “/” we have an empty vec
+    if path.is_empty() {
+        let nav = navigator();
+        nav.replace("/pages/home");   // or nav.push("/pages/home");
+        return rsx!( div { "Redirecting…" } );
+    }
+
     let content_state = use_signal(|| ContentState::Loading);
 
     // Use use_effect with path dependency to trigger on route changes
