@@ -1,7 +1,6 @@
 [application]
 base_path = "blogy"   # <-- MUST match your GitHub repo name
- out_dir = "docs"        # <-- GH-Pages will serve this folder
- asset_dir = "docs"
+out_dir = "docs"        # <-- GH-Pages will serve this folder
 [web]
 brotli_compression = true
 # repo name (or "" if you use a custom domain)

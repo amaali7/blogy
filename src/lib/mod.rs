@@ -15,6 +15,7 @@ pub static THEME_SET: OnceLock<ThemeSet> = OnceLock::new();
 use std::sync::RwLock;
 pub static JSON_DB: OnceLock<RwLock<JsonDb>> = OnceLock::new();
 
+
 // Remove the global content state and use local state instead
 #[rustfmt::skip]
 #[derive(Clone, Debug, PartialEq, Routable)]

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use reqwest::header::{HeaderMap, HeaderValue, ACCEPT};
 use serde::{Deserialize, Serialize};
 use chrono::NaiveDateTime;
 use gloo_storage::{LocalStorage, Storage};
@@ -38,12 +39,45 @@ pub enum NavNode {
 
 
 impl JsonDb {
+    async fn get_hash() -> Result<String, DataError>{
+        let mut headers = HeaderMap::new();
+            headers.insert(
+                ACCEPT,
+                HeaderValue::from_static("application/vnd.github+json"),
+            );
+
+            let client = reqwest::Client::new();
+            let resp: String = client
+                .get("https://api.github.com/repos/amaali7/markdown_files/commits")
+                .query(&[("sha", "main"), ("per_page", "1")])
+                .headers(headers)
+                .send()
+                .await?
+                .text()
+                .await?;
+            let resp : serde_json::Value = serde_json::from_str(&resp)?;
+            Ok( resp[0]["sha"]
+                .as_str().unwrap().trim().to_string())
+
+    }
     pub async fn load() -> Result<Self, DataError> {
-        if let Ok(cached) = LocalStorage::get::<String>("JsonDB") {
-            web_sys::console::log_2(&"From Local".into(),&cached.clone().into());
-            Self::from_json(&cached)
-        }else {
-           Self::update().await
+
+        if let Ok(local_sha) = LocalStorage::get::<String>("hash") {
+            if Self::get_hash().await? == local_sha.trim() {
+                if let Ok(cached) = LocalStorage::get::<String>("JsonDB") {
+                    Self::from_json(&cached)
+                }else {
+                    Self::update().await
+                }
+            }else {
+                LocalStorage::clear();
+                let _ = LocalStorage::set("hash", Self::get_hash().await?);
+                Self::update().await
+            }
+        } else {
+            LocalStorage::clear();
+            let _ = LocalStorage::set("hash", Self::get_hash().await?);
+            Self::update().await
         }
     }
 
@@ -56,6 +90,7 @@ impl JsonDb {
         let _ = LocalStorage::set("JsonDB", &json);
         Self::from_json(&json)
     }
+
 
     pub fn from_json(json: &str) -> Result<Self, DataError> {
         let value: serde_json::Value = serde_json::from_str(json)?;
