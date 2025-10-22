@@ -181,7 +181,7 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
         }
 
         let markdown = self.get_raw_content(section, page).await?;
-        let html = markdown_to_html(&markdown);
+        let html = markdown_to_html(&markdown, &path);
         // Need interior mutability here - consider using RwLock or Mutex
         // For now, we'll skip caching in this example
         Ok(html)
@@ -307,7 +307,7 @@ fn get_download_url(&self, section: &str, page: &str) -> Result<String, DataErro
     // }
 }
 
-pub fn markdown_to_html(markdown: &str) -> String {
+pub fn markdown_to_html(markdown: &str, path: &str) -> String {
     let ss = SYNTAX_SET.get().unwrap();
     let mut sr = ss.find_syntax_plain_text();
     let mut code = String::new();
@@ -330,12 +330,49 @@ pub fn markdown_to_html(markdown: &str) -> String {
             code.push_str(&t);
             None
         }
+
+        /* ----- image-src rewriter (struct variant) ----- */
+        Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
+            let new_dest = if dest_url.starts_with("http") {
+                dest_url.to_string()
+            } else {
+                let path = path.strip_prefix('/').unwrap_or(path);
+                format!("{BASE_URL}{path}/{dest_url}")   // <-- your rule
+            };
+            // 2. open the figure and the img tag
+            let mut html = String::new();
+            html.push_str("<figure>");
+            html.push_str(r#"<img src=""#);
+            html.push_str(&html_escape(&new_dest));
+            html.push_str(r#"" alt=""#);
+            html.push_str(&html_escape(&title)); // alt = old title
+            html.push_str("\" />");
+
+            // 3. add caption only if title is non-empty
+            if !title.is_empty() {
+                html.push_str("<figcaption>");
+                html.push_str(&html_escape(&title));
+                html.push_str("</figcaption>");
+            }
+            html.push_str("</figure>");
+
+            // 4. inject as raw HTML and swallow the original Image event pair
+            Some(Event::Html(html.into()))
+        }
+
         _ => Some(event),
     });
 
     let mut html_output = String::new();
     pulldown_cmark::html::push_html(&mut html_output, parser);
     html_output
+}
+
+fn html_escape(s: &str) -> String {
+    s.replace('&', "&amp;")
+     .replace('<', "&lt;")
+     .replace('>', "&gt;")
+     .replace('"', "&quot;")
 }
 
 #[derive(Debug)]

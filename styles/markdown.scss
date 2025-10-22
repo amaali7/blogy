@@ -151,4 +151,26 @@ $md-max-width: 45rem;
     margin: 10px 40px;
     padding-left: 10px;
   }
+    figure {
+    display: table;                 /* shrink-wrap to content */
+    margin: 1.5rem auto;            /* centre the block itself */
+    text-align: center;             /* centre inline children  */
+  }
+
+  figure img {
+    max-width: 100%;                /* stay responsive */
+    height: auto;
+    border-radius: 4px;
+    display: block;                 /* remove inline gap */
+    margin: 0 auto;                 /* centre image inside figure */
+  }
+
+  figcaption {
+    display: table-caption;         /* sits directly under the image */
+    caption-side: bottom;           /* …always below */
+    margin-top: 0.5rem;
+    font-size: 0.875em;
+    color: $sys-fg-soft;
+    font-style: italic;
+  }
 }
