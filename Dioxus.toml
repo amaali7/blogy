@@ -10,7 +10,7 @@ brotli_compression = true
 # HTML title tag content
 title = "blogy"
 out_dir = "docs"
-#base_path = "blogy"   # <-- MUST match your GitHub repo name
+base_path = "blogy"   # <-- MUST match your GitHub repo name
 [watcher]
 # list every file or glob you want the dev-server to watch
 include = [
