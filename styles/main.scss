@@ -42,7 +42,7 @@ a {
 }
 @include Query(smallScreen) {
   .markdown-body {
-    max-width:   70%;
+    max-width:   85%;
   }
 }
 @include Query(largScreen) {
