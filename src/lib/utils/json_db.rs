@@ -332,7 +332,7 @@ pub fn markdown_to_html(markdown: &str, path: &str) -> String {
         }
 
         /* ----- image-src rewriter (struct variant) ----- */
-        Event::Start(Tag::Image { link_type, dest_url, title, id }) => {
+        Event::Start(Tag::Image { link_type: _, dest_url, title, id: _ }) => {
             let new_dest = if dest_url.starts_with("http") {
                 dest_url.to_string()
             } else {

@@ -42,18 +42,18 @@ a {
 }
 @include Query(smallScreen) {
   .markdown-body {
-    max-width:   80rem;
+    max-width:   70%;
   }
 }
 @include Query(largScreen) {
   .markdown-body {
-    max-width:   85rem;
+    max-width:   80%;
   }
 }
 @include Query(extraLarg) {
 
   .markdown-body {
-    max-width:   90rem;
+    max-width:   70%;
   }
 }
 pre, code {
