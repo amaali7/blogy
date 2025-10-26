@@ -18,9 +18,9 @@ $sys-heading-3: #c3e88d;          // h3 color
 $sys-heading-4: #c3e88d;          // h4 color
 
 /* ----------  typography  -------------------------------- */
-$md-font-base: 1rem;
+$md-font-base: 1.2rem;
 $md-line:      1.5 * $md-font-base;
-$md-max-width: 45rem;
+$md-max-width: 90rem;
 
 @import url('https://fonts.cdnfonts.com/css/jost');
 @import url('https://fonts.cdnfonts.com/css/jetbrains-mono-2');

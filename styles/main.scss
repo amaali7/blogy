@@ -9,7 +9,7 @@
 @import "./markdown.scss";
 body {
   // font-family: "Victor Mono", monospace;
-  font-family: "Jost*", sans-serif;
+   font-family: "Jost*", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
    background-color: $sys-bg;
@@ -32,27 +32,28 @@ a {
 }
 @include Query(mobile) {
   html {
-    font-size: 15px;
+    font-size: 1rem;
   }
 }
 @include Query(tablet) {
   html {
-    font-size: 16px;
+    font-size: 1rem;
   }
 }
 @include Query(smallScreen) {
-  html {
-    font-size: 18px;
+  .markdown-body {
+    max-width:   80rem;
   }
 }
 @include Query(largScreen) {
-  html {
-    font-size: 19px;
+  .markdown-body {
+    max-width:   85rem;
   }
 }
 @include Query(extraLarg) {
-  html {
-    font-size: 20px;
+
+  .markdown-body {
+    max-width:   90rem;
   }
 }
 pre, code {
