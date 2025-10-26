@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::{utils::json_db::NavNode, Route};
 use dioxus::prelude::*;
 
@@ -34,6 +36,8 @@ fn path_to_route(path: &str) -> Option<Route> {
 struct MenuItemProps {
     pub name: String,
     pub items: Vec<NavNode>,
+    #[props(default = String::default())]
+    id: String,
 }
 
 #[derive(Clone, PartialEq, Props)]
@@ -41,26 +45,44 @@ struct LinkItemProps {
     label: String,
     href: Route,
     current_page: bool,
+    #[props(default = Callback::default())]
+    on_navigate: Callback<()>,
 }
 
 #[component]
 fn MenuItem(props: MenuItemProps) -> Element {
     let mut is_open = use_signal(|| false);
-
-    // toggle on click (mobile), hover still works on desktop
-    let toggle = move |e: Event<MouseData>| {
-        e.stop_propagation(); // ← keep outer listeners from hearing it
-        is_open.with_mut(|v| *v = !*v);
+    let id_val = if props.id.is_empty() {
+        None
+    } else {
+        Some(props.id.clone())
     };
 
     rsx! {
         li {
+            id: id_val,
             class: "menu-item",
-            onmouseenter: move |_| is_open.set(true),
-            onmouseleave: move |_| is_open.set(false),
-            onclick: toggle,                       // ← new
+            // onmouseenter: move |_| is_open.set(true),
+            // onmouseleave: move |_| is_open.set(false),
+            // onclick: toggle,                       // ← new
+            // desktop hover
+            // attach the DOM element to the ref
+            onpointerenter: move |e: Event<PointerData>| {
+                if e.data.pointer_type() != "touch" {
+                    is_open.set(true);
+                }
+            },
+            onpointerleave: move |e: Event<PointerData>| {
+                if e.data.pointer_type() != "touch" {
+                    is_open.set(false);
+                }
+            },
 
-            div { class: "menu-label", "{props.name}" }
+            // mobile / keyboard tap
+            onclick: move |e: Event<MouseData>| {
+                e.stop_propagation();
+                is_open.with_mut(|v| *v = !*v);
+            },            div { class: "menu-label", "{props.name}" }
             ul {
                 class: if is_open() { "dropdown-menu dropdown-open" }
                        else { "dropdown-menu" },
@@ -70,7 +92,7 @@ fn MenuItem(props: MenuItemProps) -> Element {
                             if let Some(route) = path_to_route(&path) {
 
                                 rsx! {
-                                    LinkItem{ label: name, href: route, current_page: false}
+                                    LinkItem{ label: name, href: route, current_page: false, on_navigate: move |_| is_open.set(false),}
                                     }
                             } else {
                                 rsx! {
@@ -98,6 +120,7 @@ fn MenuItem(props: MenuItemProps) -> Element {
 #[component]
 fn LinkItem(props: LinkItemProps) -> Element {
     let route = props.href.clone(); // Route enum we built in path_to_route
+    let on_nav = props.on_navigate;
     rsx! {
         li {
             Link {
@@ -105,6 +128,7 @@ fn LinkItem(props: LinkItemProps) -> Element {
                 aria_current: if props.current_page { "page" } else { "false" },
                 class: if props.current_page { "link-item current-page" }
                        else { "link-item" },
+                onclick: move |_| on_nav.call(()),
                 "{props.label}"
             }
         }
@@ -119,7 +143,7 @@ pub fn NavBar(props: NavBarProps) -> Element {
             class: "navbar",
             if let NavNode::Directory { name, children,  .. } = &props.items[0]{
                 div { class: "logo", "{name}" }
-                MenuItem{name: "Menu", items: children.clone()}
+                MenuItem{name: "Menu", items: children.clone(), id: "main_menu"}
             }
         }
     }
