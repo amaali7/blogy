@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use crate::{utils::json_db::NavNode, Route};
 use dioxus::prelude::*;
 
