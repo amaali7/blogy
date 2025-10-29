@@ -1,11 +1,12 @@
 use std::collections::HashMap;
-use reqwest::header::{HeaderMap, HeaderValue, ACCEPT};
+use reqwest::{header::{HeaderMap, HeaderValue, ACCEPT}, StatusCode};
 use serde::{Deserialize, Serialize};
 use chrono::NaiveDateTime;
 use gloo_storage::{LocalStorage, Storage};
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
 use syntect::html::highlighted_html_for_string;
 use crate::{BASE_URL, SYNTAX_SET, THEME_SET};
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JsonDb {
@@ -83,7 +84,8 @@ impl JsonDb {
 
 
     pub async fn update() -> Result<Self, DataError> {
-        let json = reqwest::get(format!("{}index.json", BASE_URL))
+        let url = format!("{}/index.json", BASE_URL);
+        let json = reqwest::get(url)
             .await?
             .text()
             .await?;
@@ -93,7 +95,10 @@ impl JsonDb {
 
 
     pub fn from_json(json: &str) -> Result<Self, DataError> {
-        let value: serde_json::Value = serde_json::from_str(json)?;
+        let value: serde_json::Value = serde_json::from_str(json).map_err(|e| {
+            LocalStorage::clear();
+            e
+        })?;
         let mut db = Self {
             pages: HashMap::new(),
             nav_tree: Vec::new(),
@@ -135,17 +140,22 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
                 name: name.to_string(),
             };
 
+
+            let new_path = if path.strip_suffix(&name.to_lowercase()).is_some() {
+                format!("{}", path)          // path already ends with the name
+            } else {
+                format!("{}/{}", path, name.to_lowercase()) // append the name
+            };
             pages.insert(key, PageData {
-                path: path.to_string(),
+                path: new_path.to_string(),
                 file: node["file"].as_str().map(|s| s.to_string()),
                 last_updated: node["date"].as_str()
                     .and_then(|s| NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M").ok()),
                 raw_content: None,
             });
-
             nav_nodes.push(NavNode::Page {
                 name: name.to_string(),
-                path: path.to_string(),
+                path: new_path.to_string(),
             });
         }
         "directory" => {
@@ -252,10 +262,21 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
 
         // 2. Download from network
         let url = self.get_download_url(section, page)?;
-        let content = reqwest::get(&url).await?.text().await?;
+        // let content = reqwest::get(&url).await?.text().await?;
 
-        // 3. Cache in storage
-        LocalStorage::set(&storage_key, &content)?;
+        let resp = reqwest::get(&url).await?;   // keep the Response
+
+        let content = match resp.status() {
+            StatusCode::OK => {
+                 resp.text().await?   // consume body only on success
+            }
+            _ => {
+                "".to_string()
+            }
+        };
+        if !content.is_empty() {
+            LocalStorage::set(&storage_key, &content)?;
+        }
 
         Ok(content)
     }
@@ -271,40 +292,24 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
             .ok_or(DataError::PageNotFound)
     }
 
-fn get_download_url(&self, section: &str, page: &str) -> Result<String, DataError> {
-    let key = PageKey {
-        section: section.to_string(),
-        name: page.to_string(),
-    };
-
-    self.pages.get(&key)
-        .and_then(|page_data| {
-            page_data.file.as_ref().map(|file| {
-                // Construct the full URL properly
-                if let Some(base_path) = page_data.path.strip_suffix(&page) {
-                    format!("{}{}{}", BASE_URL, base_path, file)
-                } else {
-                    format!("{}{}/{}", BASE_URL, page_data.path, file)
-                }
+    fn get_download_url(&self, section: &str, page: &str) -> Result<String, DataError> {
+        let key = PageKey {
+            section: section.to_string(),
+            name: page.to_string(),
+        };
+        self.pages.get(&key)
+            .and_then(|page_data| {
+                page_data.file.as_ref().map(|file| {
+                    // Construct the full URL properly
+                    if section.to_lowercase() == page_data.path.to_lowercase() {
+                        format!("{}{}/{}", BASE_URL, page_data.path, file)
+                    } else {
+                        format!("{}{}.md", BASE_URL, page_data.path)
+                    }
+                })
             })
-        })
-        .ok_or(DataError::PageNotFound)
-}
-
-    // fn get_download_url(&self, section: &str, page: &str) -> Result<String, DataError> {
-    //     let key = PageKey {
-    //         section: section.to_string(),
-    //         name: page.to_string(),
-    //     };
-
-    //     let path = self.get_page_path(section, page)?;
-    //     self.pages.get(&key)
-    //         .and_then(|page_data| match &page_data.file {
-    //             Some(file) => Some(format!("{}{}{}", BASE_URL,path, file)),
-    //             None => None,
-    //         })
-    //         .ok_or(DataError::PageNotFound)
-    // }
+            .ok_or(DataError::PageNotFound)
+    }
 }
 
 pub fn markdown_to_html(markdown: &str, path: &str) -> String {
@@ -337,7 +342,7 @@ pub fn markdown_to_html(markdown: &str, path: &str) -> String {
                 dest_url.to_string()
             } else {
                 let path = path.strip_prefix('/').unwrap_or(path);
-                format!("{BASE_URL}{path}/{dest_url}")   // <-- your rule
+                format!("{BASE_URL}/{path}/{dest_url}")   // <-- your rule
             };
             // 2. open the figure and the img tag
             let mut html = String::new();

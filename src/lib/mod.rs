@@ -9,7 +9,7 @@ pub use components::{NavBar, PreviewArea};
 pub use utils::json_db::{JsonDb, DataError};
 
 // Static resources
-pub static BASE_URL: &str = "https://raw.githubusercontent.com/amaali7/markdown_files/refs/heads/main/MarkDown/";
+pub static BASE_URL: &str = "https://raw.githubusercontent.com/amaali7/markdown_files/refs/heads/main/MarkDown";
 pub static SYNTAX_SET: OnceLock<SyntaxSet> = OnceLock::new();
 pub static THEME_SET: OnceLock<ThemeSet> = OnceLock::new();
 use std::sync::RwLock;

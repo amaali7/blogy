@@ -140,7 +140,13 @@ pub fn NavBar(props: NavBarProps) -> Element {
             id: "navbar",
             class: "navbar",
             if let NavNode::Directory { name, children,  .. } = &props.items[0]{
-                div { class: "logo", "{name}" }
+                // div { class: "logo", "{name}" }
+                a {
+                    href: "https://github.com/amaali7/blogy",
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                    class: "logo", "{name}"
+                }
                 MenuItem{name: "Menu", items: children.clone(), id: "main_menu"}
             }
         }
