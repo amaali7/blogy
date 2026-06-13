@@ -7,56 +7,136 @@
 @import "./mixin.scss";
 @import "./header.scss";
 @import "./markdown.scss";
+
+.scroll-top {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid $sys-border;
+  border-radius: 50%;
+  background: $sys-surface;
+  color: $sys-accent;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease,
+    transform 0.25s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  &--visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  &:hover {
+    background-color: $sys-accent;
+    color: $sys-surface;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $sys-accent;
+    outline-offset: 2px;
+  }
+}
+
+@include Query(mobile) {
+  .scroll-top {
+    bottom: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
 body {
-  // font-family: "Victor Mono", monospace;
-   font-family: "Jost*", sans-serif;
+  font-family: "Jost*", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-   background-color: $sys-bg;
+  background-color: $sys-bg;
+  min-height: 100vh;
 }
 
 html {
   overflow-x: hidden;
   font-size: 15px;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.site-main {
+  width: 100%;
+  min-height: calc(100vh - var(--header-height, 4.75rem));
 }
 
 .page-section {
   width: 100%;
-  min-height: calc(100vh);
+  min-height: calc(100vh - var(--header-height, 4.75rem));
 }
 
 a {
   text-decoration: none;
 }
-@include Query(mobile) {
-  html {
-    font-size: 1rem;
-  }
-}
-@include Query(tablet) {
-  html {
-    font-size: 1rem;
-  }
-}
-@include Query(smallScreen) {
-  .markdown-body {
-    max-width:   85%;
-  }
-}
-@include Query(largScreen) {
-  .markdown-body {
-    max-width:   80%;
-  }
-}
-@include Query(extraLarg) {
 
-  .markdown-body {
-    max-width:   70%;
-  }
-}
 pre, code {
   font-size: 0.75em;
   font-family: "JetBrains Mono", monospace;
+}
+
+@include Query(mobile) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@include Query(tablet) {
+  html {
+    font-size: 15px;
+  }
+}
+
+@include Query(smallScreen) {
+  .markdown-body {
+    max-width: 90%;
+  }
+}
+
+@include Query(largScreen) {
+  html {
+    font-size: 16px;
+  }
+
+  .markdown-body {
+    max-width: 80%;
+  }
+}
+
+@include Query(extraLarg) {
+  html {
+    font-size: 17px;
+  }
+
+  .markdown-body {
+    max-width: 70%;
+  }
 }

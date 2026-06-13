@@ -1,3 +1,4 @@
 pub mod hooks;
 pub mod json_db;
+pub mod syntax;
 pub mod websys;

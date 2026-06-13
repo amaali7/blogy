@@ -1,34 +1,40 @@
 use dioxus::prelude::*;
 use wasm_bindgen::{closure::Closure, JsCast};
-use web_sys::{Document, Element};
+use web_sys::Element;
 
-pub fn use_click_outside(elem: Signal<Option<Element>>, on_outside: impl Fn() + 'static) {
-    let cb = use_hook(|| std::rc::Rc::new(on_outside));
+pub fn use_click_outside(element_id: &'static str, is_open: Signal<bool>) {
+    use_hook(move || {
+        let mut is_open = is_open.to_owned();
 
-    use_effect(move || {
-        let window = web_sys::window().unwrap();
-        let doc: Document = window.document().unwrap();
+        let closure = Closure::wrap(Box::new(move |evt: web_sys::PointerEvent| {
+            if !is_open() {
+                return;
+            }
 
-        let listener = Closure::wrap(Box::new(move |evt: web_sys::PointerEvent| {
-            if let Some(el) = elem() {
-                let target = evt.target().unwrap().dyn_into::<Element>().unwrap();
-                if !el.contains(Some(&target)) {
-                    cb();
-                }
+            let Some(document) = web_sys::window().and_then(|window| window.document()) else {
+                return;
+            };
+
+            let Some(root) = document.get_element_by_id(element_id) else {
+                return;
+            };
+
+            let Ok(target) = evt.target().unwrap().dyn_into::<Element>() else {
+                return;
+            };
+
+            if !root.contains(Some(&target)) {
+                is_open.set(false);
             }
         }) as Box<dyn FnMut(_)>);
 
-        doc.add_event_listener_with_callback("pointerdown", listener.as_ref().unchecked_ref())
-            .unwrap();
-
-        // move the closure into the cleanup value so it stays alive
-        let listener = std::rc::Rc::new(listener);
-        move || {
-            doc.remove_event_listener_with_callback(
+        if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+            let _ = document.add_event_listener_with_callback(
                 "pointerdown",
-                listener.as_ref().unchecked_ref(),
-            )
-            .unwrap();
+                closure.as_ref().unchecked_ref(),
+            );
         }
+
+        closure.forget();
     });
 }

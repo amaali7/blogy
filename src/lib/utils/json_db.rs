@@ -162,10 +162,18 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
             let mut children = Vec::new();
             if let Some(child_nodes) = node["children"].as_array() {
                 for child in child_nodes {
-                    // Pass the directory's path as the new current_path
                     Self::process_node_static(child, path, &mut children, pages)?;
                 }
             }
+
+            let dir_name = name.to_lowercase();
+            children.retain(|child| {
+                !matches!(
+                    child,
+                    NavNode::Page { name: page_name, .. }
+                        if page_name.to_lowercase() == dir_name
+                )
+            });
 
             nav_nodes.push(NavNode::Directory {
                 name: name.to_string(),
@@ -191,6 +199,9 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
         }
 
         let markdown = self.get_raw_content(section, page).await?;
+        crate::utils::syntax::ensure_syntaxes_for_markdown(&markdown)
+            .await
+            .map_err(DataError::SyntaxInit)?;
         let html = markdown_to_html(&markdown, &path);
         // Need interior mutability here - consider using RwLock or Mutex
         // For now, we'll skip caching in this example
@@ -313,7 +324,7 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
 }
 
 pub fn markdown_to_html(markdown: &str, path: &str) -> String {
-    let ss = SYNTAX_SET.get().unwrap();
+    let ss = SYNTAX_SET.get().unwrap().read().unwrap_or_else(|e| e.into_inner());
     let mut sr = ss.find_syntax_plain_text();
     let mut code = String::new();
     let mut code_block = false;
@@ -326,7 +337,7 @@ pub fn markdown_to_html(markdown: &str, path: &str) -> String {
             None
         }
         Event::End(TagEnd::CodeBlock) => {
-            let html = highlighted_html_for_string(&code, ss, sr, theme).unwrap_or(code.clone());
+            let html = highlighted_html_for_string(&code, &ss, sr, theme).unwrap_or(code.clone());
             code.clear();
             code_block = false;
             Some(Event::Html(html.into()))
@@ -387,6 +398,7 @@ pub enum DataError {
     Storage(gloo_storage::errors::StorageError),
     InvalidStructure,
     PageNotFound,
+    SyntaxInit(String),
 }
 
 impl std::fmt::Display for DataError {
@@ -397,6 +409,7 @@ impl std::fmt::Display for DataError {
             Self::Storage(e) => format!("Storage error: {}", e),
             Self::InvalidStructure => "Invalid data structure".into(),
             Self::PageNotFound => "Page not found".into(),
+            Self::SyntaxInit(e) => format!("Syntax highlighter error: {e}"),
         })
     }
 }

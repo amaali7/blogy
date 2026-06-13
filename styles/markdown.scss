@@ -32,9 +32,11 @@ $md-max-width: 90rem;
   color:       $sys-fg;
   background:  $sys-bg;
   max-width:   $md-max-width;
+  width:       100%;
   margin:      0 auto;
-  padding:     2rem 1rem;
+  padding:     2rem 1rem 3rem;
   word-wrap:   break-word;
+  overflow-wrap: anywhere;
 
   /* ------------------------------------------------------ */
   h1, h2, h3, h4, h5, h6 {
@@ -166,11 +168,64 @@ $md-max-width: 90rem;
   }
 
   figcaption {
-    display: table-caption;         /* sits directly under the image */
-    caption-side: bottom;           /* …always below */
+    display: table-caption;
+    caption-side: bottom;
     margin-top: 0.5rem;
     font-size: 0.875em;
     color: $sys-fg-soft;
     font-style: italic;
+  }
+}
+
+@include Query(mobile) {
+  .markdown-body {
+    font-size: 1rem;
+    padding: 1.25rem 0.85rem 2rem;
+
+    h1 { font-size: 1.15rem; }
+    h2 { font-size: 1.08rem; }
+    h3 { font-size: 1.02rem; }
+
+    ul, ol { padding-left: 1.25rem; }
+
+    blockquote {
+      padding: 1rem 1rem 0.35rem;
+    }
+
+    pre:not(.highlight),
+    .highlight pre {
+      font-size: 0.7em;
+    }
+
+    table {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+
+@include Query(tablet) {
+  .markdown-body {
+    padding: 1.5rem 1.25rem 2.5rem;
+    max-width: 95%;
+  }
+}
+
+@include Query(smallScreen) {
+  .markdown-body {
+    padding: 2rem 1.5rem 3rem;
+  }
+}
+
+@include Query(largScreen) {
+  .markdown-body {
+    padding: 2.5rem 2rem 3.5rem;
+  }
+}
+
+@include Query(extraLarg) {
+  .markdown-body {
+    padding: 3rem 2.5rem 4rem;
   }
 }

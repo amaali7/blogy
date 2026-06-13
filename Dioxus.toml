@@ -1,37 +1,22 @@
 [application]
-base_path = "blogy"   # <-- MUST match your GitHub repo name
-out_dir = "docs"        # <-- GH-Pages will serve this folder
-[web]
-brotli_compression = true
-# repo name (or "" if you use a custom domain)
+name = "blogy"
+out_dir = "docs"
+public_dir = "public"
 
 [web.app]
-
-# HTML title tag content
 title = "blogy"
-out_dir = "docs"
-base_path = "blogy"   # <-- MUST match your GitHub repo name
-[watcher]
-# list every file or glob you want the dev-server to watch
-include = [
-    "styles/**/*.scss",   # your style sheets
-]
+base_path = "blogy"
 
-# [web.tailwind]
-# input  = "tailwind.css"      # the file that contains @import "tailwindcss"
-# output = "assets/tailwind.css"  #
-# include `assets` in web platform
+[web]
+brotli_compression = true
+
+[web.watcher]
+reload_html = true
+watch_path = ["src", "styles", "docs/assets/syntax", "public"]
+
 [web.resource]
-
-# Additional CSS style files
-style = [
-]
-
-# Additional JavaScript files
+style = []
 script = []
 
 [web.resource.dev]
-
-# Javascript code file
-# serve: [dev-server] only
 script = []

@@ -5,12 +5,12 @@ use syntect::{highlighting::ThemeSet, parsing::SyntaxSet};
 mod components;
 mod utils;
 
-pub use components::{NavBar, PreviewArea};
+pub use components::{NavBar, PreviewArea, ScrollToTop};
 pub use utils::json_db::{JsonDb, DataError};
 
 // Static resources
 pub static BASE_URL: &str = "https://raw.githubusercontent.com/amaali7/markdown_files/refs/heads/main/MarkDown";
-pub static SYNTAX_SET: OnceLock<SyntaxSet> = OnceLock::new();
+pub static SYNTAX_SET: OnceLock<RwLock<SyntaxSet>> = OnceLock::new();
 pub static THEME_SET: OnceLock<ThemeSet> = OnceLock::new();
 use std::sync::RwLock;
 pub static JSON_DB: OnceLock<RwLock<JsonDb>> = OnceLock::new();
@@ -69,44 +69,51 @@ fn PageContent(path: Vec<String>) -> Element {
 
 #[component]
 pub fn AppContent() -> Element {
+    let compact = utils::hooks::scroll_header::use_header_compact(48.0);
+
     rsx! {
         match JSON_DB.get() {
             Some(db_lock) => {
                 let db = db_lock.read().unwrap();
                 rsx! {
                     header {
+                        class: if compact() { "site-header site-header--compact" } else { "site-header" },
                         NavBar { items: db.get_nav_tree() }
                     }
                 }
             },
-            None => rsx! { div {  "Loading navigation..." } }
+            None => rsx! {
+                header { class: "site-header", div { "Loading navigation..." } }
+            }
         }
-        main {
+        main { class: "site-main",
             Outlet::<Route> {}
         }
+        ScrollToTop {}
     }
 }
 
 #[component]
 pub fn App() -> Element {
-    let db = use_resource(move || async move { JsonDb::load().await });
+    let init = use_resource(move || async move {
+        utils::syntax::init_syntax_highlighter()
+            .await
+            .map_err(|e| DataError::SyntaxInit(e))?;
+        JsonDb::load().await
+    });
 
-    match &*db.read_unchecked() {
+    match &*init.read_unchecked() {
         Some(Ok(jsondb)) => {
             if JSON_DB.get().is_none() {
-                JSON_DB.get_or_init(|| {
-
-                    RwLock::new(jsondb.clone())
-
-                });
+                JSON_DB.get_or_init(|| RwLock::new(jsondb.clone()));
             }
             rsx! {
                 link { rel: "stylesheet", href: asset!("/styles/main.scss") }
                 Router::<Route>{}
             }
         },
-        Some(Err(e)) => rsx! { p { "Loading Json DB failed, {e}" } },
-        None =>  rsx! { p { "Loading..." } }
+        Some(Err(e)) => rsx! { p { "Loading failed, {e}" } },
+        None => rsx! { p { "Loading..." } },
     }
 }
 
