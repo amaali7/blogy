@@ -5,8 +5,8 @@ use syntect::{highlighting::ThemeSet, parsing::SyntaxSet};
 mod components;
 mod utils;
 
-pub use components::{NavBar, PreviewArea, ScrollToTop};
-pub use utils::json_db::{JsonDb, DataError};
+use components::{NavBar, PreviewArea, ScrollToTop};
+use utils::json_db::{DataError, JsonDb};
 
 // Static resources
 pub static BASE_URL: &str = "https://raw.githubusercontent.com/amaali7/markdown_files/refs/heads/main/MarkDown";

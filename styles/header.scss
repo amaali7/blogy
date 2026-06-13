@@ -4,7 +4,6 @@ $sys-bg:        #292d3e;
 $sys-fg:        #eeffff;
 $sys-fg-soft:   #cdddeb;
 $sys-accent:    #82aaff;
-$sys-accent-hc: #89aaeb;
 $sys-border:    #c3e88d;
 $sys-surface:   #232635;
 $sys-highlight: rgba(35, 38, 53, .8);
@@ -78,8 +77,19 @@ $sys-highlight: rgba(35, 38, 53, .8);
     color: $sys-accent;
     flex-shrink: 0;
     transition: font-size 0.25s ease;
-    text-decoration: none;
   }
+}
+
+button.logo,
+button.menu-label {
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .logo-menu {
@@ -95,9 +105,14 @@ $sys-highlight: rgba(35, 38, 53, .8);
     padding: var(--menu-pad);
     border-radius: 4px;
 
-    &:hover {
+    &:hover,
+    &:active {
       background-color: $sys-highlight;
     }
+  }
+
+  &--open > .logo.menu-label {
+    background-color: $sys-highlight;
   }
 
   > .navbar-nav {
@@ -135,7 +150,8 @@ $sys-highlight: rgba(35, 38, 53, .8);
   list-style: none;
 
   .menu-label,
-  a.menu-label {
+  a.menu-label,
+  button.menu-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -150,7 +166,10 @@ $sys-highlight: rgba(35, 38, 53, .8);
       padding 0.25s ease,
       font-size 0.25s ease;
 
-    &:hover { background-color: $sys-highlight; }
+    &:hover,
+    &:active {
+      background-color: $sys-highlight;
+    }
   }
 }
 
@@ -192,13 +211,6 @@ a.link-item {
     background-color: $sys-highlight;
     color: $sys-accent;
   }
-
-  &.current-page {
-    background-color: $sys-accent;
-    color: $sys-surface;
-
-    &:hover { background-color: $sys-accent-hc; }
-  }
 }
 
 @keyframes dropdownFadeIn {
@@ -222,6 +234,14 @@ a.link-item {
 
   .dropdown-menu {
     max-width: min(92vw, 16rem);
+  }
+
+  .logo-menu > .navbar-nav {
+    left: 0;
+    right: auto;
+    max-height: calc(100vh - var(--header-height) - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   a.link-item {

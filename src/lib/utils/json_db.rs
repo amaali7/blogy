@@ -1,21 +1,16 @@
 use std::collections::HashMap;
 use reqwest::{header::{HeaderMap, HeaderValue, ACCEPT}, StatusCode};
-use serde::{Deserialize, Serialize};
-use chrono::NaiveDateTime;
+use serde_json::Value;
 use gloo_storage::{LocalStorage, Storage};
 use pulldown_cmark::{CodeBlockKind, Event, Parser, Tag, TagEnd};
 use syntect::html::highlighted_html_for_string;
 use crate::{BASE_URL, SYNTAX_SET, THEME_SET};
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct JsonDb {
-    #[serde(skip)]
     pages: HashMap<PageKey, PageData>,
-    #[serde(skip)]
     nav_tree: Vec<NavNode>,
-    #[serde(skip)]
-    html_cache: HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -24,15 +19,14 @@ struct PageKey {
     name: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 struct PageData {
     path: String,
     file: Option<String>,
-    last_updated: Option<NaiveDateTime>,
     raw_content: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum NavNode {
     Page { name: String, path: String },
     Directory { name: String, path: String, children: Vec<NavNode> },
@@ -83,7 +77,7 @@ impl JsonDb {
     }
 
 
-    pub async fn update() -> Result<Self, DataError> {
+    async fn update() -> Result<Self, DataError> {
         let url = format!("{}/index.json", BASE_URL);
         let json = reqwest::get(url)
             .await?
@@ -94,22 +88,21 @@ impl JsonDb {
     }
 
 
-    pub fn from_json(json: &str) -> Result<Self, DataError> {
-        let value: serde_json::Value = serde_json::from_str(json).map_err(|e| {
+    fn from_json(json: &str) -> Result<Self, DataError> {
+        let value: Value = serde_json::from_str(json).map_err(|e| {
             LocalStorage::clear();
             e
         })?;
         let mut db = Self {
             pages: HashMap::new(),
             nav_tree: Vec::new(),
-            html_cache: HashMap::new(),
         };
         db.build_cache(&value)?;
         Ok(db)
     }
 
 
-fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
+fn build_cache(&mut self, value: &Value) -> Result<(), DataError> {
     if let Some(root) = value.get("root") {
         let mut nav_tree = Vec::new();
         Self::process_node_static(
@@ -124,7 +117,7 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
 }
 
     fn process_node_static(
-    node: &serde_json::Value,
+    node: &Value,
     current_path: &str, // Changed from current_section to current_path
     nav_nodes: &mut Vec<NavNode>,
     pages: &mut HashMap<PageKey, PageData>,
@@ -149,8 +142,6 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
             pages.insert(key, PageData {
                 path: new_path.to_string(),
                 file: node["file"].as_str().map(|s| s.to_string()),
-                last_updated: node["date"].as_str()
-                    .and_then(|s| NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M").ok()),
                 raw_content: None,
             });
             nav_nodes.push(NavNode::Page {
@@ -190,41 +181,27 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
         self.nav_tree.clone()
     }
 
-    // Change all mutable self references to immutable where possible
     pub async fn get_html_content(&mut self, section: &str, page: &str) -> Result<String, DataError> {
         let path = self.get_page_path(section, page)?;
-
-        if let Some(cached) = self.html_cache.get(&path) {
-            return Ok(cached.clone());
-        }
-
         let markdown = self.get_raw_content(section, page).await?;
         crate::utils::syntax::ensure_syntaxes_for_markdown(&markdown)
             .await
             .map_err(DataError::SyntaxInit)?;
-        let html = markdown_to_html(&markdown, &path);
-        // Need interior mutability here - consider using RwLock or Mutex
-        // For now, we'll skip caching in this example
-        Ok(html)
+        Ok(markdown_to_html(&markdown, &path))
     }
 
-    // pub fn find_page(&self, path: &str) -> Option<(&str, &str)> {
-    //     self.pages.iter()
-    //         .find(|(_, data)| data.path == path)
-    //         .map(|(key, _)| (key.section.as_str(), key.name.as_str()))
-    // }
     pub fn find_page(&self, path: &str) -> Option<(&str, &str)> {
-    // Normalize the path by ensuring it starts with /
-    let search_path = if path.starts_with('/') {
-        path.to_string()
-    } else {
-        format!("/{}", path)
-    };
+        let search_path = if path.starts_with('/') {
+            path.to_string()
+        } else {
+            format!("/{}", path)
+        };
 
-    self.pages.iter()
-        .find(|(_, data)| data.path == search_path)
-        .map(|(key, _)| (key.section.as_str(), key.name.as_str()))
-}
+        self.pages
+            .iter()
+            .find(|(_, data)| data.path == search_path)
+            .map(|(key, _)| (key.section.as_str(), key.name.as_str()))
+    }
 
     async fn get_raw_content(
         &mut self,
@@ -273,14 +250,10 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
 
         // 2. Download from network
         let url = self.get_download_url(section, page)?;
-        // let content = reqwest::get(&url).await?.text().await?;
-
-        let resp = reqwest::get(&url).await?;   // keep the Response
+        let resp = reqwest::get(&url).await?;
 
         let content = match resp.status() {
-            StatusCode::OK => {
-                 resp.text().await?   // consume body only on success
-            }
+            StatusCode::OK => resp.text().await?,
             _ => {
                 "".to_string()
             }
@@ -323,7 +296,7 @@ fn build_cache(&mut self, value: &serde_json::Value) -> Result<(), DataError> {
     }
 }
 
-pub fn markdown_to_html(markdown: &str, path: &str) -> String {
+fn markdown_to_html(markdown: &str, path: &str) -> String {
     let ss = SYNTAX_SET.get().unwrap().read().unwrap_or_else(|e| e.into_inner());
     let mut sr = ss.find_syntax_plain_text();
     let mut code = String::new();

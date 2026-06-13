@@ -28,6 +28,10 @@ fn path_to_route(path: &str) -> Option<Route> {
     }
 }
 
+fn is_touch_pointer(e: &Event<PointerData>) -> bool {
+    e.data.pointer_type() == "touch"
+}
+
 #[derive(Clone, PartialEq, Props)]
 struct MenuItemProps {
     pub name: String,
@@ -42,7 +46,6 @@ struct MenuItemProps {
 struct LinkItemProps {
     label: String,
     href: Route,
-    current_page: bool,
     #[props(default = Callback::default())]
     on_navigate: Callback<()>,
 }
@@ -57,7 +60,6 @@ fn MenuItem(props: MenuItemProps) -> Element {
                 LinkItem {
                     label: props.name,
                     href: route,
-                    current_page: false,
                     on_navigate: move |_| close_menu.call(()),
                 }
             };
@@ -71,34 +73,37 @@ fn MenuItem(props: MenuItemProps) -> Element {
         li {
             class: "menu-item",
             onpointerenter: move |e: Event<PointerData>| {
-                if e.data.pointer_type() != "touch" {
+                if !is_touch_pointer(&e) {
                     is_open.set(true);
                 }
             },
             onpointerleave: move |e: Event<PointerData>| {
-                if e.data.pointer_type() != "touch" {
+                if !is_touch_pointer(&e) {
                     is_open.set(false);
                 }
             },
-            onclick: move |e: Event<MouseData>| {
-                e.stop_propagation();
-                is_open.with_mut(|v| *v = !*v);
-            },
-            if let Some(route) = folder_route {
-                Link {
-                    to: route,
-                    class: "menu-label",
-                    onclick: move |e: Event<MouseData>| {
-                        e.stop_propagation();
-                        close_menu.call(());
-                    },
-                    "{props.name}"
-                }
-            } else {
-                div { class: "menu-label", "{props.name}" }
+            button {
+                class: "menu-label",
+                r#type: "button",
+                aria_expanded: "{is_open()}",
+                onclick: move |e: Event<MouseData>| {
+                    e.stop_propagation();
+                    is_open.with_mut(|open| *open = !*open);
+                },
+                "{props.name}"
             }
             ul {
                 class: if is_open() { "dropdown-menu dropdown-open" } else { "dropdown-menu" },
+                if let Some(route) = folder_route {
+                    LinkItem {
+                        label: props.name.clone(),
+                        href: route,
+                        on_navigate: move |_| {
+                            is_open.set(false);
+                            close_menu.call(());
+                        },
+                    }
+                }
                 for item in props.items {
                     match item {
                         NavNode::Page { name, path } => {
@@ -107,7 +112,6 @@ fn MenuItem(props: MenuItemProps) -> Element {
                                     LinkItem {
                                         label: name,
                                         href: route,
-                                        current_page: false,
                                         on_navigate: move |_| {
                                             is_open.set(false);
                                             close_menu.call(());
@@ -147,8 +151,7 @@ fn LinkItem(props: LinkItemProps) -> Element {
         li {
             Link {
                 to: route,
-                aria_current: if props.current_page { "page" } else { "false" },
-                class: if props.current_page { "link-item current-page" } else { "link-item" },
+                class: "link-item",
                 onclick: move |_| on_nav.call(()),
                 "{props.label}"
             }
@@ -161,28 +164,39 @@ pub fn NavBar(props: NavBarProps) -> Element {
     let mut root_open = use_signal(|| false);
     let close_menu = Callback::new(move |_| root_open.set(false));
 
+    crate::utils::hooks::outside_hook::use_click_outside("logo-menu", root_open);
+
     rsx! {
         nav {
-            id: "navbar",
             class: "navbar",
             if let NavNode::Directory { name, children, .. } = &props.items[0] {
                 li {
-                    class: "menu-item logo-menu",
+                    id: "logo-menu",
+                    class: if root_open() {
+                        "menu-item logo-menu logo-menu--open"
+                    } else {
+                        "menu-item logo-menu"
+                    },
                     onpointerenter: move |e: Event<PointerData>| {
-                        if e.data.pointer_type() != "touch" {
+                        if !is_touch_pointer(&e) {
                             root_open.set(true);
                         }
                     },
                     onpointerleave: move |e: Event<PointerData>| {
-                        if e.data.pointer_type() != "touch" {
+                        if !is_touch_pointer(&e) {
                             root_open.set(false);
                         }
                     },
-                    a {
-                        href: "https://github.com/amaali7/blogy",
-                        target: "_blank",
-                        rel: "noopener noreferrer",
+                    button {
                         class: "logo menu-label",
+                        r#type: "button",
+                        aria_label: "Open navigation menu",
+                        aria_expanded: "{root_open()}",
+                        aria_controls: "main_menu",
+                        onclick: move |e: Event<MouseData>| {
+                            e.stop_propagation();
+                            root_open.with_mut(|open| *open = !*open);
+                        },
                         "{name}"
                     }
                     ul {
@@ -200,7 +214,6 @@ pub fn NavBar(props: NavBarProps) -> Element {
                                             LinkItem {
                                                 label: name,
                                                 href: route,
-                                                current_page: false,
                                                 on_navigate: close_menu,
                                             }
                                         }
